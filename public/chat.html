@@ -464,43 +464,6 @@
 
     .composer textarea:focus { border-color: rgba(255,93,93,0.4); box-shadow: 0 0 0 4px rgba(255,93,93,0.06); }
 
-    .composer-switch {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .mode-tabs {
-      display: inline-flex;
-      padding: 4px;
-      border-radius: 999px;
-      background: #fff6f4;
-      border: 1px solid rgba(255,93,93,0.12);
-      gap: 4px;
-    }
-
-    .mode-tab {
-      border: none;
-      background: transparent;
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-      color: #8a6f67;
-      cursor: pointer;
-    }
-
-    .mode-tab.active {
-      background: linear-gradient(135deg, var(--primary), var(--primary-2));
-      color: white;
-      box-shadow: 0 8px 18px rgba(255,93,93,0.18);
-    }
-
-    .mode-tab.voice {
-      min-width: 62px;
-    }
-
     .composer-tools {
       margin-left: auto;
       position: relative;
@@ -727,12 +690,6 @@
 
       <div class="toolbar">
         <div class="quick-row" id="quickRow"></div>
-        <div class="composer-switch">
-          <div class="mode-tabs">
-            <button class="mode-tab active" type="button" id="textModeBtn" onclick="setInputMode('text')">文本</button>
-            <button class="mode-tab voice" type="button" id="voiceModeBtn" onclick="setInputMode('voice')">语音</button>
-          </div>
-        </div>
         <input class="hidden" id="imageInput" type="file" accept="image/*" multiple>
         <input class="hidden" id="fileInput" type="file" multiple>
         <div class="composer" id="composerBox">
@@ -770,8 +727,6 @@
     const composerBox = document.getElementById('composerBox');
     const composerMenu = document.getElementById('composerMenu');
     const voiceTrigger = document.getElementById('voiceTrigger');
-    const textModeBtn = document.getElementById('textModeBtn');
-    const voiceModeBtn = document.getElementById('voiceModeBtn');
 
     let sessionId = 'user_' + Date.now();
     let attachments = [];
@@ -828,8 +783,6 @@
     function setInputMode(mode) {
       inputMode = mode;
       composerBox.classList.toggle('voice-mode', mode === 'voice');
-      textModeBtn.classList.toggle('active', mode === 'text');
-      voiceModeBtn.classList.toggle('active', mode === 'voice');
       leftSwitchBtn.textContent = mode === 'text' ? '⌨' : '🎤';
       composerMenu.classList.remove('open');
       if (mode === 'voice') {
