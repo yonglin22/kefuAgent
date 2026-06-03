@@ -85,6 +85,9 @@
       cursor: pointer;
       white-space: nowrap;
       box-shadow: 0 6px 14px rgba(255,93,93,0.04);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
     }
 
     .quick-pill:first-child {
@@ -94,6 +97,16 @@
     .quick-pill:active {
       background: #fff0ec;
       transform: scale(0.98);
+    }
+
+    .quick-pill::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      box-shadow: 0 0 0 4px rgba(255,77,79,0.08);
+      flex-shrink: 0;
     }
 
     .faq-head {
