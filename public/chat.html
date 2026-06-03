@@ -433,29 +433,6 @@
 
     .composer textarea:focus { border-color: rgba(255,93,93,0.4); box-shadow: 0 0 0 4px rgba(255,93,93,0.06); }
 
-    .composer.voice-mode textarea {
-      display: none;
-    }
-
-    .voice-recorder {
-      flex: 1;
-      min-height: 54px;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(255,93,93,0.14);
-      border-radius: 18px;
-      background: linear-gradient(180deg, #fff, #fff7f5);
-      color: var(--accent);
-      font-size: 13px;
-      font-weight: 700;
-      user-select: none;
-    }
-
-    .composer.voice-mode .voice-recorder {
-      display: flex;
-    }
-
     .composer-switch {
       display: flex;
       gap: 8px;
@@ -489,6 +466,10 @@
       box-shadow: 0 8px 18px rgba(255,93,93,0.18);
     }
 
+    .mode-tab.voice {
+      min-width: 62px;
+    }
+
     .composer-tools {
       margin-left: auto;
       position: relative;
@@ -498,8 +479,8 @@
       border: 1px solid rgba(255,93,93,0.14);
       background: white;
       color: #503935;
-      width: 38px;
-      height: 38px;
+      width: 42px;
+      height: 42px;
       border-radius: 50%;
       cursor: pointer;
       font-size: 18px;
@@ -535,6 +516,37 @@
 
     .menu-item:hover {
       background: #ffe9e4;
+    }
+
+    .voice-trigger {
+      flex: 1;
+      min-height: 54px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 18px;
+      background: white;
+      color: #111;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      touch-action: none;
+    }
+
+    .composer.voice-mode textarea {
+      display: none;
+    }
+
+    .composer.voice-mode .voice-trigger {
+      display: flex;
+    }
+
+    .voice-trigger.recording {
+      background: #f5f5f5;
+      border-color: rgba(0,0,0,0.14);
+      color: #333;
     }
 
     .send {
@@ -688,7 +700,7 @@
         <div class="composer-switch">
           <div class="mode-tabs">
             <button class="mode-tab active" type="button" id="textModeBtn" onclick="setInputMode('text')">文本</button>
-            <button class="mode-tab record" type="button" id="voiceModeBtn" onclick="setInputMode('voice')">语音</button>
+            <button class="mode-tab voice" type="button" id="voiceModeBtn" onclick="setInputMode('voice')">语音</button>
           </div>
           <div class="composer-tools">
             <button class="more-btn" type="button" onclick="toggleComposerMenu()">＋</button>
@@ -702,7 +714,7 @@
         <input class="hidden" id="fileInput" type="file" multiple>
         <div class="composer" id="composerBox">
           <textarea id="msgInput" placeholder="像发小红书私信一样聊，试试发一张图或一句语音…" rows="1"></textarea>
-          <div class="voice-recorder" id="voiceRecorder">按住说话，松开发送语音</div>
+          <button class="voice-trigger" id="voiceTrigger" type="button">按住 说话</button>
           <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
         </div>
         <div class="preview-row" id="previewRow"></div>
@@ -724,7 +736,7 @@
     const quickRow = document.getElementById('quickRow');
     const composerBox = document.getElementById('composerBox');
     const composerMenu = document.getElementById('composerMenu');
-    const voiceRecorder = document.getElementById('voiceRecorder');
+    const voiceTrigger = document.getElementById('voiceTrigger');
     const textModeBtn = document.getElementById('textModeBtn');
     const voiceModeBtn = document.getElementById('voiceModeBtn');
 
@@ -788,6 +800,9 @@
         input.focus();
       }
     }
+
+    let voicePressTimer = null;
+    let voicePressStarted = false;
 
     function mountFaqPanel(afterNode) {
       const panel = document.createElement('div');
@@ -965,28 +980,36 @@
           await addFiles([file], 'audio');
           stream.getTracks().forEach(t => t.stop());
           recording = false;
-          voiceRecorder.textContent = '按住说话，松开发送语音';
-          voiceRecorder.classList.remove('recording');
+          voiceTrigger.textContent = '按住 说话';
+          voiceTrigger.classList.remove('recording');
         };
         recorder.start();
         recording = true;
-        voiceRecorder.textContent = '松开结束';
-        voiceRecorder.classList.add('recording');
+        voiceTrigger.textContent = '松开结束';
+        voiceTrigger.classList.add('recording');
       } catch (e) {
         alert('无法开启麦克风，请检查浏览器权限。');
       }
     }
 
-    voiceRecorder.addEventListener('pointerdown', () => {
+    voiceTrigger.addEventListener('pointerdown', () => {
       if (inputMode !== 'voice') return;
-      startVoiceRecord();
+      voicePressStarted = false;
+      voicePressTimer = setTimeout(() => {
+        voicePressStarted = true;
+        startVoiceRecord();
+      }, 180);
     });
 
-    voiceRecorder.addEventListener('pointerup', () => {
+    voiceTrigger.addEventListener('pointerup', () => {
+      clearTimeout(voicePressTimer);
+      if (!voicePressStarted) return;
       if (recording && recorder && recorder.state !== 'inactive') recorder.stop();
     });
 
-    voiceRecorder.addEventListener('pointercancel', () => {
+    voiceTrigger.addEventListener('pointercancel', () => {
+      clearTimeout(voicePressTimer);
+      if (!voicePressStarted) return;
       if (recording && recorder && recorder.state !== 'inactive') recorder.stop();
     });
 
