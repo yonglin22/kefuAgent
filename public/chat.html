@@ -126,11 +126,15 @@
     }
 
     .faq-item {
+      display: block;
+      width: 100%;
       border: 1px solid rgba(255,93,93,0.12);
       border-radius: 18px;
       background: white;
       padding: 12px 14px;
       cursor: pointer;
+      text-align: left;
+      font: inherit;
       transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
     }
 
@@ -138,6 +142,11 @@
       transform: translateY(-1px);
       border-color: rgba(255,93,93,0.28);
       box-shadow: 0 10px 24px rgba(255,93,93,0.08);
+    }
+
+    .faq-item:active {
+      transform: translateY(0);
+      background: #fff8f7;
     }
 
     .faq-q {
@@ -823,12 +832,18 @@
 
     function renderFaqBatch() {
       const batch = FAQ_BATCHES[faqBatchIndex % FAQ_BATCHES.length];
-      faqList.innerHTML = batch.map((item, idx) => `
-        <div class="faq-item" onclick="sendQuick(${JSON.stringify(item.q)})">
+      faqList.innerHTML = '';
+      batch.forEach((item, idx) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'faq-item';
+        button.innerHTML = `
           <div class="faq-q">${idx + 1}. ${escapeHtml(item.q)}</div>
           <div class="faq-a">${escapeHtml(item.a)}</div>
-        </div>
-      `).join('');
+        `;
+        button.addEventListener('click', () => sendQuick(item.q));
+        faqList.appendChild(button);
+      });
     }
 
     function renderQuickRow() {
