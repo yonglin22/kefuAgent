@@ -6,16 +6,16 @@
   <title>电商客服 Agent 知识库 v1.1</title>
   <style>
     :root {
-      --bg: #fff8f5;
-      --panel: rgba(255,255,255,0.9);
+      --bg: #f5f5f7;
+      --panel: rgba(255,255,255,0.94);
       --card: #ffffff;
       --text: #221815;
       --muted: #8f7f78;
-      --line: rgba(255, 111, 97, 0.14);
-      --primary: #ff5d5d;
-      --primary-2: #ff8a5c;
+      --line: rgba(255, 111, 97, 0.12);
+      --primary: #ff4d4f;
+      --primary-2: #ff7a45;
       --accent: #ff2e63;
-      --shadow: 0 20px 60px rgba(255, 93, 93, 0.12);
+      --shadow: 0 18px 50px rgba(0, 0, 0, 0.08);
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,124 +23,60 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--text);
-      background:
-        radial-gradient(circle at top left, rgba(255, 93, 93, 0.12), transparent 28%),
-        radial-gradient(circle at right top, rgba(255, 138, 92, 0.14), transparent 24%),
-        linear-gradient(180deg, #fffaf8 0%, #fff2ef 55%, #fff 100%);
+      background: linear-gradient(180deg, #ececef 0%, #f8f8fa 100%);
       overflow: hidden;
     }
 
     .app {
-      width: min(100vw, 1280px);
+      width: min(100vw, 430px);
       height: 100vh;
       margin: 0 auto;
-      display: grid;
-      grid-template-columns: 320px 1fr;
-      gap: 18px;
-      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 0;
     }
 
     .mobile-topbar {
-      display: none;
+      display: flex;
     }
 
-    .sidebar,
     .stage {
       background: var(--panel);
       backdrop-filter: blur(20px);
-      border: 1px solid rgba(255,255,255,0.75);
-      border-radius: 28px;
+      border: none;
+      border-radius: 0;
       box-shadow: var(--shadow);
       overflow: hidden;
     }
 
-    .sidebar {
-      display: flex;
-      flex-direction: column;
-      position: relative;
-    }
-
-    .brand {
-      padding: 24px 22px 18px;
-      background: linear-gradient(135deg, rgba(255,93,93,0.96), rgba(255,138,92,0.96));
-      color: white;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .brand::after {
-      content: '';
-      position: absolute;
-      right: -30px;
-      top: -30px;
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.16);
-      filter: blur(2px);
-    }
-
-    .brand-row {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .logo {
-      width: 48px;
-      height: 48px;
-      border-radius: 16px;
-      background: rgba(255,255,255,0.2);
-      display: grid;
-      place-items: center;
-      font-size: 23px;
-    }
-
-    .brand h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.2px; }
-    .brand p { margin-top: 4px; font-size: 12px; opacity: 0.92; }
-
-    .nav {
-      padding: 16px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .nav-card,
-    .promo,
-    .profile {
-      border: 1px solid var(--line);
-      border-radius: 22px;
-      background: rgba(255,255,255,0.82);
-    }
-
-    .nav-card {
-      padding: 14px 16px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      cursor: pointer;
-    }
-
-    .nav-card strong { font-size: 14px; }
-    .nav-card span { font-size: 12px; color: var(--muted); }
-
-    .promo {
-      margin: 0 16px;
-      padding: 16px;
-      background: linear-gradient(180deg, #fff, #fff6f3);
-    }
-
-    .promo .title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
-    .promo .text { font-size: 12px; color: var(--muted); line-height: 1.7; }
-
     .faq-panel {
-      margin: 16px;
-      padding: 16px;
+      margin: 10px 12px 0;
+      padding: 12px;
       border: 1px solid var(--line);
-      border-radius: 22px;
+      border-radius: 18px;
       background: linear-gradient(180deg, #fff, #fff7f4);
+    }
+
+    .quick-row {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 0 10px 10px;
+      scrollbar-width: none;
+    }
+    .quick-row::-webkit-scrollbar { display: none; }
+
+    .quick-pill {
+      flex: 0 0 auto;
+      border: 1px solid rgba(255,93,93,0.14);
+      background: white;
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #503935;
+      cursor: pointer;
+      white-space: nowrap;
     }
 
     .faq-head {
@@ -213,12 +149,7 @@
     }
 
     .profile {
-      margin: 16px;
-      margin-top: auto;
-      padding: 16px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
+      display: none;
     }
 
     .profile .avatar {
@@ -239,24 +170,25 @@
       display: flex;
       flex-direction: column;
       min-width: 0;
+      flex: 1;
     }
 
     .topbar {
-      padding: 18px 22px;
+      padding: 14px 14px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      border-bottom: 1px solid rgba(255,93,93,0.12);
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.96);
     }
 
-    .topbar h2 { font-size: 18px; }
-    .topbar .subtitle { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .topbar h2 { font-size: 16px; }
+    .topbar .subtitle { font-size: 11px; color: var(--muted); margin-top: 3px; }
     .live {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 10px 14px;
+      padding: 8px 10px;
       border-radius: 999px;
       background: rgba(255,93,93,0.08);
       color: var(--accent);
@@ -271,18 +203,18 @@
     .feed {
       flex: 1;
       overflow-y: auto;
-      padding: 20px;
+      padding: 12px 10px 132px;
       scroll-behavior: smooth;
     }
 
     .post {
-      max-width: 840px;
-      margin: 0 auto 16px;
-      background: var(--card);
-      border: 1px solid rgba(255,93,93,0.10);
-      border-radius: 26px;
-      box-shadow: 0 14px 30px rgba(255,93,93,0.06);
-      overflow: hidden;
+      max-width: 100%;
+      margin: 0 0 14px;
+      background: transparent;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      overflow: visible;
       animation: rise .28s ease;
     }
 
@@ -295,13 +227,13 @@
       display: flex;
       align-items: center;
       gap: 12px;
-      padding: 16px 18px 10px;
+      padding: 0 14px 6px;
     }
 
     .post-head .avatar {
-      width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+      width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
       font-weight: 800; color: white;
-      background: linear-gradient(135deg, #ff5d5d, #ff8a5c);
+      background: linear-gradient(135deg, #ff4d4f, #ff7a45);
       flex-shrink: 0;
     }
 
@@ -309,27 +241,54 @@
     .post-head .who span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
 
     .bubble {
-      padding: 0 18px 16px;
-      font-size: 15px;
-      line-height: 1.75;
+      padding: 0;
+      font-size: 14px;
+      line-height: 1.7;
       white-space: pre-wrap;
       word-break: break-word;
     }
 
     .bubble.user { color: var(--text); }
-    .bubble.bot { color: #372d28; }
+    .bubble.bot { color: #2f2722; }
+
+    .bubble-wrap {
+      display: inline-block;
+      max-width: min(85%, 320px);
+      margin: 0 14px 14px;
+      padding: 11px 14px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+    }
+
+    .bubble-wrap.bot {
+      background: white;
+      border: 1px solid rgba(0,0,0,0.05);
+      border-top-left-radius: 8px;
+      align-self: flex-start;
+    }
+
+    .bubble-wrap.user {
+      background: linear-gradient(135deg, #ff4d4f, #ff7a45);
+      color: white;
+      border-top-right-radius: 8px;
+      align-self: flex-end;
+    }
 
     .media-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
       gap: 10px;
-      padding: 0 18px 18px;
+      padding: 0 14px 14px;
     }
 
     .media {
-      border-radius: 18px;
+      border-radius: 16px;
       overflow: hidden;
-      border: 1px solid rgba(255,93,93,0.10);
+      border: 1px solid rgba(0,0,0,0.05);
       background: #fff;
       position: relative;
     }
@@ -346,12 +305,12 @@
       padding: 10px 12px;
       font-size: 12px;
       color: var(--muted);
-      border-top: 1px solid rgba(255,93,93,0.08);
+      border-top: 1px solid rgba(0,0,0,0.04);
       background: #fffdfc;
     }
 
     .audio-wrap {
-      padding: 0 18px 18px;
+      padding: 0 14px 14px;
     }
 
     .audio-box {
@@ -359,9 +318,9 @@
       align-items: center;
       gap: 12px;
       padding: 12px 14px;
-      border-radius: 18px;
+      border-radius: 16px;
       background: linear-gradient(180deg, #fff7f5, #fff);
-      border: 1px solid rgba(255,93,93,0.12);
+      border: 1px solid rgba(0,0,0,0.05);
     }
 
     .audio-badge {
@@ -377,7 +336,7 @@
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
-      padding: 0 18px 18px;
+      padding: 0 14px 14px;
     }
 
     .tag {
@@ -403,16 +362,16 @@
     @keyframes bounce { 0%, 80%, 100% { transform: scale(0.72); opacity: .45; } 40% { transform: scale(1); opacity: 1; } }
 
     .toolbar {
-      padding: 14px 18px 18px;
-      border-top: 1px solid rgba(255,93,93,0.10);
-      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,250,248,0.96));
+      padding: 10px 10px 12px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+      background: rgba(255,255,255,0.98);
     }
 
     .attachments {
       display: flex;
       gap: 10px;
       flex-wrap: wrap;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
 
     .chip {
@@ -422,7 +381,7 @@
       border: 1px solid rgba(255,93,93,0.14);
       background: white;
       border-radius: 999px;
-      padding: 9px 12px;
+      padding: 8px 12px;
       font-size: 12px;
       cursor: pointer;
       color: #503935;
@@ -452,8 +411,8 @@
       min-height: 54px;
       max-height: 130px;
       resize: none;
-      border: 1px solid rgba(255,93,93,0.16);
-      border-radius: 20px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 18px;
       padding: 14px 16px;
       font: inherit;
       outline: none;
@@ -462,13 +421,13 @@
       box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
     }
 
-    .composer textarea:focus { border-color: rgba(255,93,93,0.5); box-shadow: 0 0 0 4px rgba(255,93,93,0.08); }
+    .composer textarea:focus { border-color: rgba(255,93,93,0.4); box-shadow: 0 0 0 4px rgba(255,93,93,0.06); }
 
     .send {
-      width: 52px; height: 52px; border: none; border-radius: 18px;
+      width: 50px; height: 50px; border: none; border-radius: 18px;
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: white; cursor: pointer; font-size: 18px; font-weight: 800;
-      box-shadow: 0 12px 24px rgba(255,93,93,0.28);
+      box-shadow: 0 12px 24px rgba(255,93,93,0.22);
     }
     .send:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -481,11 +440,11 @@
 
     .preview {
       position: relative;
-      width: 110px;
-      height: 110px;
-      border-radius: 18px;
+      width: 96px;
+      height: 96px;
+      border-radius: 16px;
       overflow: hidden;
-      border: 1px solid rgba(255,93,93,0.16);
+      border: 1px solid rgba(0,0,0,0.05);
       background: #fff;
     }
     .preview img, .preview audio, .preview video {
@@ -506,86 +465,70 @@
     .hidden { display: none; }
 
     @media (max-width: 980px) {
-      body { overflow: auto; }
+      body { overflow: hidden; }
       .app {
-        grid-template-columns: 1fr;
-        height: auto;
-        min-height: 100vh;
+        width: min(100vw, 430px);
+        height: 100vh;
         padding: 0;
         gap: 0;
-      }
-      .sidebar { display: none; }
-      .stage {
-        min-height: 100vh;
-        border-radius: 0;
-        border: none;
-        box-shadow: none;
-        background: transparent;
-      }
-      .mobile-topbar {
-        display: flex;
       }
       .topbar {
         position: sticky;
         top: 0;
         z-index: 10;
-        padding: 14px 16px;
-        border-radius: 0 0 22px 22px;
+        padding: 12px 12px 10px;
+        border-radius: 0;
       }
       .feed {
-        padding: 14px 12px 128px;
+        padding: 12px 10px 126px;
         min-height: 0;
       }
       .post {
         max-width: 100%;
-        border-radius: 22px;
+        border-radius: 18px;
       }
       .toolbar {
         position: sticky;
         bottom: 0;
         z-index: 12;
-        padding: 12px;
-        border-top-left-radius: 20px;
-        border-top-right-radius: 20px;
-        box-shadow: 0 -12px 30px rgba(255,93,93,0.08);
+        padding: 10px 10px 12px;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        box-shadow: 0 -12px 30px rgba(0,0,0,0.05);
       }
       .faq-panel {
-        margin: 12px;
+        margin: 10px 10px 0;
+        padding: 12px;
       }
       .preview-row {
         overflow-x: auto;
         flex-wrap: nowrap;
         padding-bottom: 4px;
       }
+      .desktop-topbar { display: none; }
+      .mobile-topbar { display: flex; }
+      .sidebar { display: none; }
     }
 
     @media (max-width: 640px) {
-      .topbar h2 { font-size: 16px; }
+      .topbar h2 { font-size: 15px; }
       .topbar .subtitle { font-size: 11px; }
       .live { padding: 8px 10px; }
-      .faq-panel { padding: 14px; }
+      .faq-panel { padding: 12px; }
       .faq-head {
         align-items: flex-start;
         flex-direction: column;
       }
       .faq-switch { align-self: flex-start; }
       .composer { flex-wrap: nowrap; }
-      .composer textarea { min-height: 48px; border-radius: 18px; }
-      .send { width: 48px; height: 48px; border-radius: 16px; flex-shrink: 0; }
+      .composer textarea { min-height: 46px; border-radius: 16px; }
+      .send { width: 46px; height: 46px; border-radius: 16px; flex-shrink: 0; }
       .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
   </style>
 </head>
 <body>
   <div class="app">
-    <div class="mobile-topbar topbar">
-      <div>
-        <h2>小红书风客服助手</h2>
-        <div class="subtitle">移动端版本 · 文字 / 图片 / 语音</div>
-      </div>
-      <div class="live"><span class="dot"></span> Live</div>
-    </div>
-
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-row">
@@ -622,10 +565,10 @@
     </aside>
 
     <main class="stage">
-      <div class="topbar desktop-topbar">
+      <div class="topbar mobile-topbar">
         <div>
-          <h2>小红书风客服助手</h2>
-          <div class="subtitle">电商客服 Agent 知识库 v1.1 · 支持文字、图片和语音上传</div>
+          <h2>红薯客服</h2>
+          <div class="subtitle">私信 · 在线客服 · 7×24</div>
         </div>
         <div class="live"><span class="dot"></span> Live</div>
       </div>
@@ -633,6 +576,7 @@
       <div class="feed" id="chatArea"></div>
 
       <div class="toolbar">
+        <div class="quick-row" id="quickRow"></div>
         <div class="attachments">
           <button class="chip primary" type="button" onclick="pickImages()">+ 图片</button>
           <button class="chip primary" type="button" onclick="pickAudio()">+ 语音</button>
@@ -659,6 +603,7 @@
     const previewRow = document.getElementById('previewRow');
     const recordBtn = document.getElementById('recordBtn');
     const faqList = document.getElementById('faqList');
+    const quickRow = document.getElementById('quickRow');
 
     let sessionId = 'user_' + Date.now();
     let attachments = [];
@@ -688,6 +633,8 @@
       ]
     ];
 
+    const QUICK_REPLIES = ['查订单状态', '查物流', '查退款进度', '转人工'];
+
     function autoResize() {
       input.style.height = 'auto';
       input.style.height = Math.min(input.scrollHeight, 130) + 'px';
@@ -705,6 +652,12 @@
           <div class="faq-q">${idx + 1}. ${escapeHtml(item.q)}</div>
           <div class="faq-a">${escapeHtml(item.a)}</div>
         </div>
+      `).join('');
+    }
+
+    function renderQuickRow() {
+      quickRow.innerHTML = QUICK_REPLIES.map(item => `
+        <button class="quick-pill" type="button" onclick="sendQuick(${JSON.stringify(item)})">${escapeHtml(item)}</button>
       `).join('');
     }
 
@@ -787,7 +740,7 @@
       if (typing) {
         body = '<div class="bubble bot"><span class="typing"><span></span><span></span><span></span></span></div>';
       } else if (text) {
-        body = `<div class="bubble ${role}">${escapeHtml(text)}</div>`;
+        body = `<div class="bubble ${role}"><div class="bubble-wrap ${role}">${escapeHtml(text)}</div></div>`;
       }
 
       const media = attachments.length ? `<div class="media-grid">${attachments.map(a => {
@@ -913,6 +866,7 @@
       meta: { type: 'order_list', content: '支持图片/语音附件' }
     });
     renderFaqBatch();
+    renderQuickRow();
   </script>
 </body>
 </html>
