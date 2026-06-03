@@ -24,12 +24,13 @@
       font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
       color: var(--text);
       background: linear-gradient(180deg, #ececef 0%, #f8f8fa 100%);
-      overflow: hidden;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     .app {
       width: min(100vw, 430px);
-      height: 100vh;
+      min-height: 100dvh;
       margin: 0 auto;
       display: flex;
       flex-direction: column;
@@ -465,10 +466,10 @@
     .hidden { display: none; }
 
     @media (max-width: 980px) {
-      body { overflow: hidden; }
+      body { overflow-y: auto; }
       .app {
         width: min(100vw, 430px);
-        height: 100vh;
+        min-height: 100dvh;
         padding: 0;
         gap: 0;
       }
@@ -594,7 +595,9 @@
   </div>
 
   <script>
-    const API = '/api/chat';
+    const API = location.protocol === 'file:'
+      ? 'https://cs-agent-ashy.vercel.app/api/chat'
+      : '/api/chat';
     const chatArea = document.getElementById('chatArea');
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
