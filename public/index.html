@@ -29,6 +29,7 @@
     .bubble { padding: 10px 14px; border-radius: 12px; line-height: 1.6; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
     .message.bot .bubble { background: white; color: #1f1f1f; border: 1px solid #e8e8e8; border-top-left-radius: 4px; }
     .message.user .bubble { background: #1677ff; color: white; border-top-right-radius: 4px; }
+    .bubble.welcome { font-size: 15px; line-height: 1.7; }
     
     /* Order Card */
     .order-card { background: #f6f8ff; border: 1px solid #d6e4ff; border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
@@ -88,7 +89,15 @@
       <div class="message bot">
         <div class="avatar">🤖</div>
         <div>
-          <div class="bubble">您好！我是智服 AI 客服，7×24 小时为您服务。🛍️\n\n我可以帮您：\n• 查询订单状态\n• 查询物流信息\n• 申请退款/查询退款进度\n• 解答售后政策问题\n\n请问有什么可以帮您？</div>
+          <div class="bubble welcome">您好！我是智服 AI 客服，7×24 小时为您服务。🛍️
+
+我可以帮您：
+• 查询订单状态
+• 查询物流信息
+• 申请退款/查询退款进度
+• 解答售后政策问题
+
+请问有什么可以帮您？</div>
           <div class="quick-actions">
             <div class="quick-btn" onclick="sendQuick('我的订单到哪了？')">📦 查订单</div>
             <div class="quick-btn" onclick="sendQuick('我的快递到哪了？')">🚚 查物流</div>
