@@ -811,9 +811,9 @@
       const batch = FAQ_BATCHES[faqBatchIndex % FAQ_BATCHES.length];
       faqList.innerHTML = '';
       batch.forEach((item, idx) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'faq-item';
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'faq-item';
         button.innerHTML = `
           <div class="faq-q">${idx + 1}. ${escapeHtml(item.q)}</div>
           <div class="faq-a">${escapeHtml(item.a)}</div>
@@ -824,9 +824,15 @@
     }
 
     function renderQuickRow() {
-      quickRow.innerHTML = QUICK_REPLIES.map(item => `
-        <button class="quick-pill" type="button" onclick="sendQuick(${JSON.stringify(item)})">${escapeHtml(item)}</button>
-      `).join('');
+      quickRow.innerHTML = '';
+      QUICK_REPLIES.forEach((item) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'quick-pill';
+        button.textContent = item;
+        button.addEventListener('click', () => sendQuick(item));
+        quickRow.appendChild(button);
+      });
     }
 
     function switchFaqBatch() {
