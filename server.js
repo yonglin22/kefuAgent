@@ -25,7 +25,7 @@ const CONFIG = {
   agent: {
     brandName: '智服 AI 客服',
     platform: '电商智能客服助手',
-    version: 'v1.1',
+    version: 'v1.2',
     maxAutoRefund: 50,     // 自动退款上限（元）
     forceHumanRefund: 200, // 强制转人工金额（元）
     maxConversationRounds: 10, // 最大对话轮次
@@ -43,6 +43,16 @@ const KNOWLEDGE_BASE = {
     description: '7×24 小时在线，覆盖订单查询、物流追踪、退款查询',
     version: CONFIG.agent.version
   },
+  docVersion: 'v1.1',
+  docSummary: [
+    '项目目标：7×24 在线，V1 重点覆盖订单状态、物流追踪、退款查询，优先实现高频低难度场景。',
+    '场景策略：高频低难度先做；高频高难度做成人机协作；低频高难度不做或后期再做。',
+    '冷启动策略：客服访谈、内部文档梳理、友商帮助中心参考、种子问题集自造并行推进。',
+    '系统原则：简洁优先、行动导向、同理心、诚实不编造。',
+    '安全边界：金额超阈值、投诉升级、用户强烈不满、法律合规咨询必须转人工。',
+    '数据合规：支付信息、身份证等严禁进入 LLM，上下文只保留必要脱敏信息。',
+    '评测与灰度：先内测再 1%/5%/30% 灰度，离线评测集持续回归。'
+  ],
 
   // FAQ 知识库（用于 RAG 召回）
   faq: [
@@ -273,6 +283,7 @@ function buildSystemPrompt(userId = 'user_001') {
   const faqSample = KNOWLEDGE_BASE.faq.slice(0, 5).map(f =>
     `Q: ${f.question}\nA: ${f.answer}`
   ).join('\n\n');
+  const docSummary = KNOWLEDGE_BASE.docSummary.map(x => `- ${x}`).join('\n');
 
   return `你是${CONFIG.agent.brandName}，一个专业的电商智能客服助手。
 
@@ -281,6 +292,12 @@ function buildSystemPrompt(userId = 'user_001') {
 - 平台：${CONFIG.agent.platform}
 - 版本：${CONFIG.agent.version}
 - 服务对象：电商用户（订单查询、物流追踪、退款售后）
+
+## 知识库版本
+- 知识库：${KNOWLEDGE_BASE.docVersion}
+- 这份知识库覆盖项目背景、场景优先级、冷启动策略、自建架构、灰度上线、评测体系、合规与安全护栏。
+- 回答时优先参考以下摘要：
+${docSummary}
 
 ## 对话原则（必须遵守）
 1. **简洁优先**：能1句话说清楚的不说2句
@@ -360,6 +377,8 @@ app.get('/api/health', (req, res) => {
 app.get('/api/knowledge', (req, res) => {
   res.json({
     brand: KNOWLEDGE_BASE.brand,
+    docVersion: KNOWLEDGE_BASE.docVersion,
+    docSummary: KNOWLEDGE_BASE.docSummary,
     faqCount: KNOWLEDGE_BASE.faq.length,
     tools: CONFIG.agent.toolPermissions || null,
     guardrails: {
@@ -371,15 +390,19 @@ app.get('/api/knowledge', (req, res) => {
 
 // 聊天接口（核心）
 app.post('/api/chat', async (req, res) => {
-  const { message, sessionId = 'default', userId = 'user_001' } = req.body;
+  const { message, sessionId = 'default', userId = 'user_001', attachments = [] } = req.body;
+  const normalizedMessage = typeof message === 'string' ? message.trim() : '';
 
-  if (!message || message.trim().length === 0) {
+  if (!normalizedMessage && (!Array.isArray(attachments) || attachments.length === 0)) {
     return res.json({ error: '请输入消息' });
   }
 
   const startTime = Date.now();
   const session = getSession(sessionId);
-  const emotion = detectEmotion(message);
+  const attachmentHint = Array.isArray(attachments) && attachments.length > 0
+    ? attachments.map(a => a.name || a.kind || '附件').join(' ')
+    : '';
+  const emotion = detectEmotion(`${normalizedMessage} ${attachmentHint}`.trim());
 
   // 情绪检测：直接转人工
   if (emotion === 'angry') {
@@ -387,7 +410,7 @@ app.post('/api/chat', async (req, res) => {
       response: {
         type: 'escalate',
         content: `我完全理解您的心情，真的很抱歉给您带来了不好的体验。这个问题比较特殊，我来为您转接资深人工客服处理，确保给您一个满意的解决方案。请稍候，正在为您转接客服坐席...`,
-        humanSummary: `用户情绪激动，原话："${message}"。建议优先安抚处理，快速响应。`
+        humanSummary: `用户情绪激动，原话："${normalizedMessage || '[仅附件消息]'}"。建议优先安抚处理，快速响应。`
       },
       latency: `${Date.now() - startTime}ms`,
       sessionId
@@ -396,12 +419,12 @@ app.post('/api/chat', async (req, res) => {
 
   // 转人工关键词检测（兜底）
   const humanWords = ['转人工', '人工客服', '找人工', '客服电话'];
-  if (humanWords.some(w => message.includes(w))) {
+  if (humanWords.some(w => normalizedMessage.includes(w))) {
     return res.json({
       response: {
         type: 'escalate',
         content: `好的，我马上为您转接人工客服。在转接之前，我已将我们的对话摘要整理好，客服同事无需您重复说明情况，请稍候...`,
-        humanSummary: `用户要求转人工。对话摘要：用户说"${message}"。`
+        humanSummary: `用户要求转人工。对话摘要：用户说"${normalizedMessage}"。`
       },
       latency: `${Date.now() - startTime}ms`,
       sessionId
@@ -422,7 +445,19 @@ app.post('/api/chat', async (req, res) => {
     messages.push(...historyMessages);
 
     // 当前用户消息
-    messages.push({ role: 'user', content: message });
+    const attachmentContext = Array.isArray(attachments) && attachments.length > 0
+      ? attachments.map((a, idx) => {
+          const kind = a.kind || 'file';
+          const name = a.name || `附件${idx + 1}`;
+          const size = a.size ? `${Math.round(a.size / 1024)}KB` : '未知大小';
+          const mime = a.mimeType || 'unknown';
+          return `- ${kind}: ${name} (${mime}, ${size})`;
+        }).join('\n')
+      : '';
+    const combinedContent = attachmentContext
+      ? `${normalizedMessage || '用户发送了附件'}\n\n[附件信息]\n${attachmentContext}`
+      : normalizedMessage;
+    messages.push({ role: 'user', content: combinedContent });
 
     // 2. 调用 DeepSeek API（带工具调用）
     if (!CONFIG.deepSeek.apiKey) {
@@ -430,7 +465,7 @@ app.post('/api/chat', async (req, res) => {
         response: {
           type: 'escalate',
           content: '系统未配置大模型密钥，暂时无法自动回复，我已为您转人工处理。',
-          humanSummary: `缺少 DEEPSEEK_API_KEY。用户原话："${message}"。`
+          humanSummary: `缺少 DEEPSEEK_API_KEY。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
         },
         latency: `${Date.now() - startTime}ms`,
         sessionId
@@ -460,14 +495,14 @@ app.post('/api/chat', async (req, res) => {
         const args = JSON.parse(toolCall.function.arguments);
         // 转人工
         session.messages.push(
-          { role: 'user', content: message },
+          { role: 'user', content: combinedContent },
           { role: 'assistant', content: `[转人工：${args.reason}]` }
         );
         return res.json({
           response: {
             type: 'escalate',
             content: `好的，我马上为您转接人工客服。${args.reason}。请稍候，我已将对话摘要推送给客服坐席...`,
-            humanSummary: `转人工原因：${args.reason}。用户原话："${message}"。`
+            humanSummary: `转人工原因：${args.reason}。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
           },
           latency: `${Date.now() - startTime}ms`,
           sessionId
@@ -485,7 +520,7 @@ app.post('/api/chat', async (req, res) => {
 
       // 保存对话历史
       session.messages.push(
-        { role: 'user', content: message },
+        { role: 'user', content: combinedContent },
         { role: 'assistant', content: finalContent }
       );
 
@@ -515,7 +550,7 @@ app.post('/api/chat', async (req, res) => {
     // 4. 无工具调用，直接返回 LLM 回复
     const content = choice.message.content;
     session.messages.push(
-      { role: 'user', content: message },
+      { role: 'user', content: combinedContent },
       { role: 'assistant', content }
     );
 
@@ -535,7 +570,7 @@ app.post('/api/chat', async (req, res) => {
       response: {
         type: 'escalate',
         content: `抱歉，系统暂时出现了问题。我正在为您转接人工客服处理，请稍候...`,
-        humanSummary: `系统错误：${error.message}。用户原话："${message}"。`
+        humanSummary: `系统错误：${error.message}。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
       },
       latency: `${Date.now() - startTime}ms`,
       sessionId,
