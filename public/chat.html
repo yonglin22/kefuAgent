@@ -425,14 +425,36 @@
       align-items: flex-end;
     }
 
+    .composer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .switch-icon {
+      width: 34px;
+      height: 34px;
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: 50%;
+      background: white;
+      display: grid;
+      place-items: center;
+      color: #222;
+      font-size: 18px;
+      flex-shrink: 0;
+      cursor: pointer;
+    }
+
     .composer textarea {
       flex: 1;
-      min-height: 54px;
+      min-height: 44px;
       max-height: 130px;
       resize: none;
       border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 18px;
-      padding: 14px 16px;
+      border-radius: 14px;
+      padding: 10px 14px;
       font: inherit;
       outline: none;
       background: white;
@@ -499,7 +521,7 @@
     .composer-menu {
       position: absolute;
       right: 0;
-      bottom: 48px;
+      bottom: calc(100% + 10px);
       display: none;
       min-width: 140px;
       padding: 8px;
@@ -529,12 +551,12 @@
 
     .voice-trigger {
       flex: 1;
-      min-height: 54px;
+      min-height: 44px;
       border: 1px solid rgba(0,0,0,0.08);
-      border-radius: 18px;
+      border-radius: 14px;
       background: white;
       color: #111;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       cursor: pointer;
       display: none;
@@ -659,10 +681,9 @@
       }
       .faq-switch { align-self: flex-start; }
       .composer { flex-wrap: nowrap; }
-      .composer textarea { min-height: 46px; border-radius: 16px; }
-      .send { width: 46px; height: 46px; border-radius: 16px; flex-shrink: 0; }
+      .composer textarea { min-height: 42px; border-radius: 14px; }
+      .send { width: 42px; height: 42px; border-radius: 14px; flex-shrink: 0; }
       .media-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .composer-menu { bottom: 44px; }
     }
   </style>
 </head>
@@ -711,6 +732,16 @@
             <button class="mode-tab active" type="button" id="textModeBtn" onclick="setInputMode('text')">文本</button>
             <button class="mode-tab voice" type="button" id="voiceModeBtn" onclick="setInputMode('voice')">语音</button>
           </div>
+        </div>
+        <input class="hidden" id="imageInput" type="file" accept="image/*" multiple>
+        <input class="hidden" id="fileInput" type="file" multiple>
+        <div class="composer" id="composerBox">
+          <button class="switch-icon" type="button" id="leftSwitchBtn" onclick="toggleLeftInputIcon()">⌨</button>
+          <div class="composer-left">
+            <textarea id="msgInput" placeholder="像发小红书私信一样聊，试试发一张图或一句语音…" rows="1"></textarea>
+            <button class="voice-trigger" id="voiceTrigger" type="button">按住 说话</button>
+          </div>
+          <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
           <div class="composer-tools">
             <button class="more-btn" type="button" onclick="toggleComposerMenu()">＋</button>
             <div class="composer-menu" id="composerMenu">
@@ -718,13 +749,6 @@
               <button class="menu-item" type="button" onclick="pickFiles()">上传文件</button>
             </div>
           </div>
-        </div>
-        <input class="hidden" id="imageInput" type="file" accept="image/*" multiple>
-        <input class="hidden" id="fileInput" type="file" multiple>
-        <div class="composer" id="composerBox">
-          <textarea id="msgInput" placeholder="像发小红书私信一样聊，试试发一张图或一句语音…" rows="1"></textarea>
-          <button class="voice-trigger" id="voiceTrigger" type="button">按住 说话</button>
-          <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
         </div>
         <div class="preview-row" id="previewRow"></div>
       </div>
@@ -791,6 +815,10 @@
       composerMenu.classList.toggle('open');
     }
 
+    function toggleLeftInputIcon() {
+      setInputMode(inputMode === 'text' ? 'voice' : 'text');
+    }
+
     document.addEventListener('click', (e) => {
       if (!composerMenu.contains(e.target) && !e.target.closest('.more-btn')) {
         composerMenu.classList.remove('open');
@@ -802,6 +830,7 @@
       composerBox.classList.toggle('voice-mode', mode === 'voice');
       textModeBtn.classList.toggle('active', mode === 'text');
       voiceModeBtn.classList.toggle('active', mode === 'voice');
+      leftSwitchBtn.textContent = mode === 'text' ? '⌨' : '🎤';
       composerMenu.classList.remove('open');
       if (mode === 'voice') {
         input.blur();
@@ -1027,6 +1056,8 @@
       if (!voicePressStarted) return;
       if (recording && recorder && recorder.state !== 'inactive') recorder.stop();
     });
+
+    setInputMode('text');
 
     async function sendMsg() {
       const text = input.value.trim();
