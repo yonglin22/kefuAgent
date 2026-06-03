@@ -115,10 +115,11 @@
     function addMessage(text, isUser = false, extra = null) {
       const msgDiv = document.createElement('div');
       msgDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+      const isEscalation = !isUser && extra && extra.type === 'escalate';
       msgDiv.innerHTML = `
         <div class="avatar">${isUser ? '👤' : '🤖'}</div>
         <div>
-          <div class="bubble">${text}</div>
+          ${isEscalation ? '' : `<div class="bubble">${text}</div>`}
           ${renderExtra(extra)}
         </div>
       `;
@@ -148,7 +149,7 @@
         html += `<div class="refund-card"><div class="amount">退款 ¥${r.amount}</div><div class="detail">状态：${r.status}<br>预计到账：${r.estimatedArrival}</div></div>`;
       }
       if (extra.type === 'escalate') {
-        html += `<div class="escalation">⚠️ 已转人工处理，客服将接手当前会话。</div>`;
+        html += `<div class="escalation">⚠️ ${extra.content || '已转人工处理，客服将接手当前会话。'}</div>`;
       }
       return html;
     }
