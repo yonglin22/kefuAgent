@@ -356,22 +356,6 @@
 
     .audio-box audio { width: 100%; }
 
-    .tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      padding: 0 14px 14px;
-    }
-
-    .tag {
-      font-size: 12px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: rgba(255,93,93,0.08);
-      color: var(--accent);
-      font-weight: 700;
-    }
-
     .typing {
       display: inline-flex;
       gap: 5px;
@@ -942,8 +926,6 @@
         return `<div class="media"><div class="caption">${escapeHtml(a.name)}</div></div>`;
       }).join('')}</div>` : '';
 
-      const tags = meta?.type ? `<div class="tags">${renderTags(meta)}</div>` : '';
-
       post.innerHTML = `
         <div class="post-head">
           <div class="avatar">${avatar}</div>
@@ -951,7 +933,6 @@
         </div>
         ${body}
         ${media}
-        ${tags}
       `;
 
       chatArea.appendChild(post);
@@ -960,12 +941,7 @@
     }
 
     function renderTags(meta) {
-      const items = [];
-      if (meta.type === 'order') items.push('订单详情');
-      if (meta.type === 'logistics') items.push('物流轨迹');
-      if (meta.type === 'refund') items.push('退款进度');
-      if (meta.type === 'escalate') items.push('人工客服');
-      return items.concat(meta.content ? [meta.content] : []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
+      return '';
     }
 
     function addTyping() {
