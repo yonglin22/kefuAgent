@@ -62,7 +62,7 @@ PORT=3000
 NODE_ENV=production
 
 # DeepSeek LLM 配置
-DEEPSEEK_API_KEY=sk-62a0b79ad68347418b652413315e06b4
+DEEPSEEK_API_KEY=__YOUR_DEEPSEEK_API_KEY__
 DEEPSEEK_API_URL=https://api.deepseek.com/chat/completions
 DEEPSEEK_MODEL=deepseek-chat
 
