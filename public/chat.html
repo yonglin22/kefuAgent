@@ -65,27 +65,34 @@
 
     .quick-row {
       display: flex;
-      gap: 8px;
+      gap: 10px;
       overflow-x: auto;
-      padding: 0 10px 10px;
+      padding: 0 10px 8px;
       scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
     }
     .quick-row::-webkit-scrollbar { display: none; }
 
     .quick-pill {
       flex: 0 0 auto;
-      border: 1px solid rgba(255,93,93,0.14);
-      background: white;
-      border-radius: 999px;
-      padding: 8px 12px;
+      border: 1px solid rgba(255,77,79,0.12);
+      background: linear-gradient(180deg, #fff, #fff7f6);
+      border-radius: 16px;
+      padding: 10px 14px;
       font-size: 12px;
-      color: #503935;
+      font-weight: 700;
+      color: #5c423c;
       cursor: pointer;
       white-space: nowrap;
+      box-shadow: 0 6px 14px rgba(255,93,93,0.04);
+    }
+
+    .quick-pill:first-child {
+      margin-left: 2px;
     }
 
     .quick-pill:active {
-      background: #fff3f0;
+      background: #fff0ec;
       transform: scale(0.98);
     }
 
