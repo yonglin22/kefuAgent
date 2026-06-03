@@ -84,6 +84,11 @@
       white-space: nowrap;
     }
 
+    .quick-pill:active {
+      background: #fff3f0;
+      transform: scale(0.98);
+    }
+
     .faq-head {
       display: flex;
       align-items: center;
@@ -456,6 +461,7 @@
       border-radius: 14px;
       padding: 10px 14px;
       font: inherit;
+      font-size: 13px;
       outline: none;
       background: white;
       color: var(--text);
@@ -510,6 +516,11 @@
 
     .menu-item:hover {
       background: #ffe9e4;
+    }
+
+    .menu-item:active {
+      background: #ffdcd2;
+      transform: scale(0.99);
     }
 
     .voice-trigger {
@@ -695,7 +706,7 @@
         <div class="composer" id="composerBox">
           <button class="switch-icon" type="button" id="leftSwitchBtn" onclick="toggleLeftInputIcon()">⌨</button>
           <div class="composer-left">
-            <textarea id="msgInput" placeholder="像发小红书私信一样聊，试试发一张图或一句语音…" rows="1"></textarea>
+            <textarea id="msgInput" placeholder="输入消息..." rows="1"></textarea>
             <button class="voice-trigger" id="voiceTrigger" type="button">按住 说话</button>
           </div>
           <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
@@ -816,9 +827,9 @@
       const batch = FAQ_BATCHES[faqBatchIndex % FAQ_BATCHES.length];
       faqList.innerHTML = '';
       batch.forEach((item, idx) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'faq-item';
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'faq-item';
         button.innerHTML = `
           <div class="faq-q">${idx + 1}. ${escapeHtml(item.q)}</div>
           <div class="faq-a">${escapeHtml(item.a)}</div>

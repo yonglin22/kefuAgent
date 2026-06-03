@@ -201,6 +201,38 @@ function queryRefund(orderId) {
   return order && order.refund ? order.refund : null;
 }
 
+function buildFallbackResponse(normalizedMessage) {
+  const q = String(normalizedMessage || '');
+  if (/退款|退货|退款进度|到账/.test(q)) {
+    return {
+      type: 'refund',
+      content: '我先帮您看退款相关问题。您可以告诉我订单号，我来继续查询退款进度。'
+    };
+  }
+  if (/物流|快递|到哪|签收/.test(q)) {
+    return {
+      type: 'logistics',
+      content: '我先帮您看物流问题。您可以直接发订单号，我来帮您查物流轨迹。'
+    };
+  }
+  if (/订单|下单|发货/.test(q)) {
+    return {
+      type: 'order',
+      content: '我先帮您看订单问题。您可以直接发订单号，我来帮您查询订单状态。'
+    };
+  }
+  if (/转人工|人工|客服/.test(q)) {
+    return {
+      type: 'escalate',
+      content: '好的，我马上帮您转人工客服。'
+    };
+  }
+  return {
+    type: 'text',
+    content: '我先帮您看下这个问题。您可以补充一下订单号、图片或更多细节，我继续帮您处理。'
+  };
+}
+
 // FAQ 简单检索（生产环境应替换为向量检索）
 function searchFAQ(query) {
   const q = query.toLowerCase();
@@ -461,10 +493,10 @@ app.post('/api/chat', async (req, res) => {
 
     // 2. 调用 DeepSeek API（带工具调用）
     if (!CONFIG.deepSeek.apiKey) {
+      const fallback = buildFallbackResponse(normalizedMessage);
       return res.json({
         response: {
-          type: 'escalate',
-          content: '系统未配置大模型密钥，暂时无法自动回复，我已为您转人工处理。',
+          ...fallback,
           humanSummary: `缺少 DEEPSEEK_API_KEY。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
         },
         latency: `${Date.now() - startTime}ms`,
