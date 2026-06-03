@@ -207,12 +207,25 @@
       </div>
 
       <div class="actions">
-        <a class="btn primary" href="/chat.html">打开客服聊天</a>
-        <a class="btn secondary" href="/chat.html" target="_blank" rel="noopener">新窗口打开</a>
+        <a class="btn primary" id="openChatBtn" href="/chat.html">打开客服聊天</a>
+        <a class="btn secondary" id="openChatNewBtn" href="/chat.html" target="_blank" rel="noopener">新窗口打开</a>
       </div>
 
-      <div class="mini">如果微信里还是受限，建议点右上角“...”，选择在浏览器中打开。</div>
+      <div class="mini">如果微信里还是受限，建议点右上角“...”，选择在浏览器中打开。<br><span id="directLinkText"></span></div>
     </div>
   </div>
+  <script>
+    const PREVIEW_CHAT_URL = 'https://cs-agent-o0b4rz24s-sunyonglin19930618-6743s-projects.vercel.app/chat.html';
+    const openChatBtn = document.getElementById('openChatBtn');
+    const openChatNewBtn = document.getElementById('openChatNewBtn');
+    const directLinkText = document.getElementById('directLinkText');
+    if (location.protocol === 'file:') {
+      openChatBtn.href = PREVIEW_CHAT_URL;
+      openChatNewBtn.href = PREVIEW_CHAT_URL;
+      directLinkText.textContent = '直接链接：' + PREVIEW_CHAT_URL;
+    } else {
+      directLinkText.textContent = '直接链接：' + location.origin + '/chat.html';
+    }
+  </script>
 </body>
 </html>
