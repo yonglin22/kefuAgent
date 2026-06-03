@@ -3,115 +3,498 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>智服 AI 客服 - 电商智能客服助手</title>
+  <title>小红书风客服助手</title>
   <style>
+    :root {
+      --bg: #fff8f5;
+      --panel: rgba(255,255,255,0.9);
+      --card: #ffffff;
+      --text: #221815;
+      --muted: #8f7f78;
+      --line: rgba(255, 111, 97, 0.14);
+      --primary: #ff5d5d;
+      --primary-2: #ff8a5c;
+      --accent: #ff2e63;
+      --shadow: 0 20px 60px rgba(255, 93, 93, 0.12);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
-    .container { width: 100%; max-width: 480px; height: 90vh; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); display: flex; flex-direction: column; overflow: hidden; }
-    
-    /* Header */
-    .header { background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
-    .header .avatar { width: 42px; height: 42px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .header .info h1 { font-size: 16px; font-weight: 600; }
-    .header .info p { font-size: 12px; opacity: 0.85; }
-    .header .status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; }
-    .status-dot { width: 8px; height: 8px; background: #52c41a; border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-    
-    /* Chat Area */
-    .chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #f5f7fa; }
-    .message { display: flex; gap: 8px; max-width: 85%; animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .message.user { margin-left: auto; flex-direction: row-reverse; }
-    .message .avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
-    .message.bot .avatar { background: #e6f4ff; }
-    .message.user .avatar { background: #f6ffed; }
-    .bubble { padding: 10px 14px; border-radius: 12px; line-height: 1.6; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
-    .message.bot .bubble { background: white; color: #1f1f1f; border: 1px solid #e8e8e8; border-top-left-radius: 4px; }
-    .message.user .bubble { background: #1677ff; color: white; border-top-right-radius: 4px; }
-    .bubble.welcome { font-size: 15px; line-height: 1.7; }
-    
-    /* Order Card */
-    .order-card { background: #f6f8ff; border: 1px solid #d6e4ff; border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
-    .order-card .product { font-weight: 600; color: #1f1f1f; }
-    .order-card .detail { font-size: 13px; color: #666; margin-top: 4px; }
-    
-    /* Logistics Timeline */
-    .logistics-timeline { margin-top: 8px; padding-left: 16px; border-left: 2px solid #1677ff; }
-    .logistics-item { padding: 4px 0; font-size: 13px; }
-    .logistics-item .time { color: #999; font-size: 12px; }
-    .logistics-item .desc { color: #333; }
-    
-    /* Refund Card */
-    .refund-card { background: #fff7e6; border: 1px solid #ffe58f; border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
-    .refund-card .amount { font-size: 18px; font-weight: 700; color: #fa8c16; }
-    
-    /* Typing Indicator */
-    .typing { display: flex; gap: 4px; padding: 6px 0; }
-    .typing span { width: 6px; height: 6px; background: #999; border-radius: 50%; animation: typing 1.2s infinite; }
-    .typing span:nth-child(2) { animation-delay: 0.2s; }
-    .typing span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes typing { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-    
-    /* Quick Actions */
-    .quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-    .quick-btn { background: white; border: 1px solid #d9d9d9; border-radius: 20px; padding: 4px 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
-    .quick-btn:hover { background: #1677ff; color: white; border-color: #1677ff; }
-    
-    /* Input Area */
-    .input-area { padding: 12px 16px; background: white; border-top: 1px solid #e8e8e8; display: flex; gap: 8px; align-items: center; }
-    .input-area input { flex: 1; padding: 10px 14px; border: 1px solid #d9d9d9; border-radius: 24px; outline: none; font-size: 14px; transition: border-color 0.2s; }
-    .input-area input:focus { border-color: #1677ff; }
-    .send-btn { width: 40px; height: 40px; background: #1677ff; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
-    .send-btn:hover { background: #0958d9; }
-    .send-btn:disabled { background: #d9d9d9; cursor: not-allowed; }
-    
-    /* Escalation Banner */
-    .escalation { background: #fff1f0; border: 1px solid #ffccc7; border-radius: 8px; padding: 10px 12px; margin-top: 6px; font-size: 13px; color: #a8071a; }
-    .escalation .icon { font-size: 16px; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(255, 93, 93, 0.12), transparent 28%),
+        radial-gradient(circle at right top, rgba(255, 138, 92, 0.14), transparent 24%),
+        linear-gradient(180deg, #fffaf8 0%, #fff2ef 55%, #fff 100%);
+      overflow: hidden;
+    }
+
+    .app {
+      width: min(100vw, 1280px);
+      height: 100vh;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .sidebar,
+    .stage {
+      background: var(--panel);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255,255,255,0.75);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .brand {
+      padding: 24px 22px 18px;
+      background: linear-gradient(135deg, rgba(255,93,93,0.96), rgba(255,138,92,0.96));
+      color: white;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .brand::after {
+      content: '';
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.16);
+      filter: blur(2px);
+    }
+
+    .brand-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.2);
+      display: grid;
+      place-items: center;
+      font-size: 23px;
+    }
+
+    .brand h1 { font-size: 18px; font-weight: 800; letter-spacing: 0.2px; }
+    .brand p { margin-top: 4px; font-size: 12px; opacity: 0.92; }
+
+    .nav {
+      padding: 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .nav-card,
+    .promo,
+    .profile {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      background: rgba(255,255,255,0.82);
+    }
+
+    .nav-card {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .nav-card strong { font-size: 14px; }
+    .nav-card span { font-size: 12px; color: var(--muted); }
+
+    .promo {
+      margin: 0 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #fff6f3);
+    }
+
+    .promo .title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .promo .text { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+    .profile {
+      margin: 16px;
+      margin-top: auto;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #ff8a5c, #ff5d5d);
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+    }
+
+    .profile .meta strong { display: block; font-size: 14px; }
+    .profile .meta span { font-size: 12px; color: var(--muted); }
+
+    .stage {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .topbar {
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,93,93,0.12);
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,255,255,0.72));
+    }
+
+    .topbar h2 { font-size: 18px; }
+    .topbar .subtitle { font-size: 12px; color: var(--muted); margin-top: 3px; }
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,93,93,0.08);
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .dot {
+      width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(255,45,99,0.12);
+    }
+
+    .feed {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      scroll-behavior: smooth;
+    }
+
+    .post {
+      max-width: 840px;
+      margin: 0 auto 16px;
+      background: var(--card);
+      border: 1px solid rgba(255,93,93,0.10);
+      border-radius: 26px;
+      box-shadow: 0 14px 30px rgba(255,93,93,0.06);
+      overflow: hidden;
+      animation: rise .28s ease;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .post-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 18px 10px;
+    }
+
+    .post-head .avatar {
+      width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+      font-weight: 800; color: white;
+      background: linear-gradient(135deg, #ff5d5d, #ff8a5c);
+      flex-shrink: 0;
+    }
+
+    .post-head .who strong { display: block; font-size: 14px; }
+    .post-head .who span { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+    .bubble {
+      padding: 0 18px 16px;
+      font-size: 15px;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .bubble.user { color: var(--text); }
+    .bubble.bot { color: #372d28; }
+
+    .media-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      padding: 0 18px 18px;
+    }
+
+    .media {
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,93,93,0.10);
+      background: #fff;
+      position: relative;
+    }
+
+    .media img, .media video {
+      width: 100%;
+      display: block;
+      aspect-ratio: 1 / 1;
+      object-fit: cover;
+      background: #f6f6f6;
+    }
+
+    .media .caption {
+      padding: 10px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      border-top: 1px solid rgba(255,93,93,0.08);
+      background: #fffdfc;
+    }
+
+    .audio-wrap {
+      padding: 0 18px 18px;
+    }
+
+    .audio-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 18px;
+      background: linear-gradient(180deg, #fff7f5, #fff);
+      border: 1px solid rgba(255,93,93,0.12);
+    }
+
+    .audio-badge {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, #ff5d5d, #ff8a5c);
+      color: white; display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+
+    .audio-box audio { width: 100%; }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding: 0 18px 18px;
+    }
+
+    .tag {
+      font-size: 12px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: rgba(255,93,93,0.08);
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .typing {
+      display: inline-flex;
+      gap: 5px;
+      align-items: center;
+      padding: 2px 0;
+    }
+    .typing span {
+      width: 7px; height: 7px; border-radius: 50%; background: #ff7a7a; animation: bounce 1.1s infinite ease-in-out;
+    }
+    .typing span:nth-child(2) { animation-delay: .15s; }
+    .typing span:nth-child(3) { animation-delay: .3s; }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0.72); opacity: .45; } 40% { transform: scale(1); opacity: 1; } }
+
+    .toolbar {
+      padding: 14px 18px 18px;
+      border-top: 1px solid rgba(255,93,93,0.10);
+      background: linear-gradient(180deg, rgba(255,255,255,0.92), rgba(255,250,248,0.96));
+    }
+
+    .attachments {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(255,93,93,0.14);
+      background: white;
+      border-radius: 999px;
+      padding: 9px 12px;
+      font-size: 12px;
+      cursor: pointer;
+      color: #503935;
+    }
+
+    .chip.primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      border-color: transparent;
+      color: white;
+      font-weight: 700;
+    }
+
+    .chip.recording {
+      background: rgba(255,45,99,0.1);
+      color: var(--accent);
+      border-color: rgba(255,45,99,0.16);
+    }
+
+    .composer {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .composer textarea {
+      flex: 1;
+      min-height: 54px;
+      max-height: 130px;
+      resize: none;
+      border: 1px solid rgba(255,93,93,0.16);
+      border-radius: 20px;
+      padding: 14px 16px;
+      font: inherit;
+      outline: none;
+      background: white;
+      color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.8);
+    }
+
+    .composer textarea:focus { border-color: rgba(255,93,93,0.5); box-shadow: 0 0 0 4px rgba(255,93,93,0.08); }
+
+    .send {
+      width: 52px; height: 52px; border: none; border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white; cursor: pointer; font-size: 18px; font-weight: 800;
+      box-shadow: 0 12px 24px rgba(255,93,93,0.28);
+    }
+    .send:disabled { opacity: .5; cursor: not-allowed; }
+
+    .preview-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .preview {
+      position: relative;
+      width: 110px;
+      height: 110px;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 1px solid rgba(255,93,93,0.16);
+      background: #fff;
+    }
+    .preview img, .preview audio, .preview video {
+      width: 100%; height: 100%; object-fit: cover;
+      display: block;
+    }
+    .preview .remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 24px; height: 24px;
+      border: none; border-radius: 50%;
+      background: rgba(0,0,0,0.62);
+      color: white; cursor: pointer;
+      line-height: 1;
+    }
+
+    .hidden { display: none; }
+
+    @media (max-width: 980px) {
+      body { overflow: auto; }
+      .app { grid-template-columns: 1fr; height: auto; min-height: 100vh; }
+      .sidebar { display: none; }
+      .stage { min-height: calc(100vh - 36px); }
+      .feed { min-height: 0; }
+    }
+
+    @media (max-width: 640px) {
+      .app { padding: 10px; gap: 10px; }
+      .feed { padding: 14px; }
+      .toolbar { padding: 12px; }
+      .topbar { padding: 16px; }
+      .composer { flex-wrap: wrap; }
+      .send { width: 100%; height: 48px; border-radius: 16px; }
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="avatar">🤖</div>
-      <div class="info">
-        <h1>智服 AI 客服</h1>
-        <p>电商智能客服助手 v1.0</p>
-      </div>
-      <div class="status">
-        <div class="status-dot"></div>
-        <span>在线</span>
-      </div>
-    </div>
-    
-    <div class="chat-area" id="chatArea">
-      <div class="message bot">
-        <div class="avatar">🤖</div>
-        <div>
-          <div class="bubble welcome">您好！我是智服 AI 客服，7×24 小时为您服务。🛍️
-
-我可以帮您：
-• 查询订单状态
-• 查询物流信息
-• 申请退款/查询退款进度
-• 解答售后政策问题
-
-请问有什么可以帮您？</div>
-          <div class="quick-actions">
-            <div class="quick-btn" onclick="sendQuick('我的订单到哪了？')">📦 查订单</div>
-            <div class="quick-btn" onclick="sendQuick('我的快递到哪了？')">🚚 查物流</div>
-            <div class="quick-btn" onclick="sendQuick('怎么申请退款？')">💰 查退款</div>
-            <div class="quick-btn" onclick="sendQuick('转人工')">👤 转人工</div>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-row">
+          <div class="logo">薯</div>
+          <div>
+            <h1>小红书风客服</h1>
+            <p>图片、语音、文字都能发</p>
           </div>
         </div>
       </div>
-    </div>
-    
-    <div class="input-area">
-      <input type="text" id="msgInput" placeholder="输入您的问题…" onkeydown="if(event.key==='Enter')sendMsg()">
-      <button class="send-btn" id="sendBtn" onclick="sendMsg()">➤</button>
-    </div>
+      <div class="nav">
+        <div class="nav-card"><strong>热门话题</strong><span>查订单 / 售后</span></div>
+        <div class="nav-card"><strong>种草图文</strong><span>支持图片上传</span></div>
+        <div class="nav-card"><strong>语音消息</strong><span>支持录音发送</span></div>
+      </div>
+      <div class="promo">
+        <div class="title">红书式对话面板</div>
+        <div class="text">更像内容社区里的私信聊天。上传图片后会显示卡片预览，语音会作为音频消息展示。</div>
+      </div>
+      <div class="profile">
+        <div class="avatar">U</div>
+        <div class="meta"><strong>用户中心</strong><span>在线 · 这条会话已开启</span></div>
+      </div>
+    </aside>
+
+    <main class="stage">
+      <div class="topbar">
+        <div>
+          <h2>小红书风客服助手</h2>
+          <div class="subtitle">支持文字、图片和语音上传</div>
+        </div>
+        <div class="live"><span class="dot"></span> Live</div>
+      </div>
+
+      <div class="feed" id="chatArea"></div>
+
+      <div class="toolbar">
+        <div class="attachments">
+          <button class="chip primary" type="button" onclick="pickImages()">+ 图片</button>
+          <button class="chip primary" type="button" onclick="pickAudio()">+ 语音</button>
+          <button class="chip" type="button" id="recordBtn" onclick="toggleRecord()">🎙️ 开始录音</button>
+          <input class="hidden" id="imageInput" type="file" accept="image/*" multiple>
+          <input class="hidden" id="audioInput" type="file" accept="audio/*">
+        </div>
+        <div class="composer">
+          <textarea id="msgInput" placeholder="像发小红书私信一样聊，试试发一张图或一句语音…" rows="1"></textarea>
+          <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
+        </div>
+        <div class="preview-row" id="previewRow"></div>
+      </div>
+    </main>
   </div>
 
   <script>
@@ -119,92 +502,220 @@
     const chatArea = document.getElementById('chatArea');
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
-    let sessionId = 'user_' + Date.now();
+    const imageInput = document.getElementById('imageInput');
+    const audioInput = document.getElementById('audioInput');
+    const previewRow = document.getElementById('previewRow');
+    const recordBtn = document.getElementById('recordBtn');
 
-    function addMessage(text, isUser = false, extra = null) {
-      const msgDiv = document.createElement('div');
-      msgDiv.className = `message ${isUser ? 'user' : 'bot'}`;
-      const isEscalation = !isUser && extra && extra.type === 'escalate';
-      msgDiv.innerHTML = `
-        <div class="avatar">${isUser ? '👤' : '🤖'}</div>
-        <div>
-          ${isEscalation ? '' : `<div class="bubble">${text}</div>`}
-          ${renderExtra(extra)}
-        </div>
-      `;
-      chatArea.appendChild(msgDiv);
-      chatArea.scrollTop = chatArea.scrollHeight;
-      return msgDiv;
+    let sessionId = 'user_' + Date.now();
+    let attachments = [];
+    let recorder = null;
+    let recordedChunks = [];
+    let recording = false;
+
+    function autoResize() {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 130) + 'px';
     }
 
-    function renderExtra(extra) {
-      if (!extra) return '';
-      let html = '';
-      if (extra.type === 'order' || extra.type === 'order_list') {
-        const orders = extra.type === 'order' ? [extra.order] : extra.orders;
-        html += '<div class="order-card">' +
-          orders.map(o => `<div class="product">📦 ${o.product} ¥${o.price}</div><div class="detail">状态：${o.status}<br>下单：${o.createTime}</div>`).join('') +
-          '</div>';
+    input.addEventListener('input', autoResize);
+
+    function pickImages() { imageInput.click(); }
+    function pickAudio() { audioInput.click(); }
+
+    function fileToDataUrl(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function addFiles(files, kind) {
+      for (const file of files) {
+        const dataUrl = await fileToDataUrl(file);
+        attachments.push({
+          kind,
+          name: file.name,
+          mimeType: file.type,
+          dataUrl,
+          size: file.size
+        });
       }
-      if (extra.type === 'logistics' && extra.logistics) {
-        const l = extra.logistics;
-        html += '<div class="order-card"><div class="product">🚚 ${l.company} ${l.trackingNo}</div>' +
-          '<div class="logistics-timeline">' +
-          l.records.slice(-3).map(r => `<div class="logistics-item"><div class="time">${r.time}</div><div class="desc">${r.desc}</div></div>`).join('') +
-          '</div></div>';
+      renderPreview();
+    }
+
+    imageInput.addEventListener('change', async (e) => {
+      if (!e.target.files?.length) return;
+      await addFiles(Array.from(e.target.files), 'image');
+      e.target.value = '';
+    });
+
+    audioInput.addEventListener('change', async (e) => {
+      if (!e.target.files?.length) return;
+      await addFiles(Array.from(e.target.files), 'audio');
+      e.target.value = '';
+    });
+
+    function renderPreview() {
+      previewRow.innerHTML = attachments.map((a, idx) => {
+        const body = a.kind === 'image'
+          ? `<img src="${a.dataUrl}" alt="${escapeHtml(a.name)}">`
+          : `<audio controls src="${a.dataUrl}"></audio>`;
+        return `<div class="preview">${body}<button class="remove" onclick="removeAttachment(${idx})">×</button></div>`;
+      }).join('');
+    }
+
+    function removeAttachment(idx) {
+      attachments.splice(idx, 1);
+      renderPreview();
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function attachmentSummary(items) {
+      return items.map(a => ({ kind: a.kind, name: a.name, mimeType: a.mimeType, size: a.size, dataUrl: a.dataUrl }));
+    }
+
+    function addPost({ role, text, attachments = [], meta = null, typing = false }) {
+      const post = document.createElement('article');
+      post.className = 'post';
+
+      const avatar = role === 'user' ? '我' : '薯';
+      const who = role === 'user' ? '你' : 'AI 客服';
+      const sub = role === 'user' ? '刚刚' : '系统回复';
+
+      let body = '';
+      if (typing) {
+        body = '<div class="bubble bot"><span class="typing"><span></span><span></span><span></span></span></div>';
+      } else if (text) {
+        body = `<div class="bubble ${role}">${escapeHtml(text)}</div>`;
       }
-      if (extra.type === 'refund' && extra.refund) {
-        const r = extra.refund;
-        html += `<div class="refund-card"><div class="amount">退款 ¥${r.amount}</div><div class="detail">状态：${r.status}<br>预计到账：${r.estimatedArrival}</div></div>`;
-      }
-      if (extra.type === 'escalate') {
-        html += `<div class="escalation">⚠️ ${extra.content || '已转人工处理，客服将接手当前会话。'}</div>`;
-      }
-      return html;
+
+      const media = attachments.length ? `<div class="media-grid">${attachments.map(a => {
+        if (a.kind === 'image') {
+          return `<div class="media"><img src="${a.dataUrl}" alt="${escapeHtml(a.name)}"><div class="caption">${escapeHtml(a.name)}</div></div>`;
+        }
+        if (a.kind === 'audio') {
+          return `<div class="media"><div class="caption">🎧 ${escapeHtml(a.name)}</div><audio controls src="${a.dataUrl}"></audio></div>`;
+        }
+        return `<div class="media"><div class="caption">${escapeHtml(a.name)}</div></div>`;
+      }).join('')}</div>` : '';
+
+      const tags = meta?.type ? `<div class="tags">${renderTags(meta)}</div>` : '';
+
+      post.innerHTML = `
+        <div class="post-head">
+          <div class="avatar">${avatar}</div>
+          <div class="who"><strong>${who}</strong><span>${sub}</span></div>
+        </div>
+        ${body}
+        ${media}
+        ${tags}
+      `;
+
+      chatArea.appendChild(post);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      return post;
+    }
+
+    function renderTags(meta) {
+      const items = [];
+      if (meta.type === 'order') items.push('订单详情');
+      if (meta.type === 'order_list') items.push('订单列表');
+      if (meta.type === 'logistics') items.push('物流轨迹');
+      if (meta.type === 'refund') items.push('退款进度');
+      if (meta.type === 'escalate') items.push('人工客服');
+      return items.concat(meta.content ? [meta.content] : []).map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('');
     }
 
     function addTyping() {
-      const div = document.createElement('div');
-      div.className = 'message bot';
-      div.id = 'typing';
-      div.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
-      chatArea.appendChild(div);
-      chatArea.scrollTop = chatArea.scrollHeight;
+      return addPost({ role: 'bot', typing: true });
     }
 
-    function removeTyping() {
-      const el = document.getElementById('typing');
-      if (el) el.remove();
+    async function toggleRecord() {
+      if (recording) {
+        if (recorder && recorder.state !== 'inactive') recorder.stop();
+        return;
+      }
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        recordedChunks = [];
+        recorder = new MediaRecorder(stream);
+        recorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
+        recorder.onstop = async () => {
+          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+          const file = new File([blob], `voice-${Date.now()}.webm`, { type: blob.type });
+          await addFiles([file], 'audio');
+          stream.getTracks().forEach(t => t.stop());
+          recording = false;
+          recordBtn.textContent = '🎙️ 开始录音';
+          recordBtn.classList.remove('recording');
+        };
+        recorder.start();
+        recording = true;
+        recordBtn.textContent = '⏺️ 结束录音';
+        recordBtn.classList.add('recording');
+      } catch (e) {
+        alert('无法开启麦克风，请检查浏览器权限。');
+      }
     }
 
     async function sendMsg() {
       const text = input.value.trim();
-      if (!text) return;
-      input.value = '';
+      if (!text && attachments.length === 0) return;
       sendBtn.disabled = true;
-      addMessage(text, true);
-      addTyping();
+
+      const payloadAttachments = attachmentSummary(attachments);
+      addPost({ role: 'user', text: text || '发送了附件', attachments: payloadAttachments });
+
+      input.value = '';
+      autoResize();
+      attachments = [];
+      renderPreview();
+
+      const typingNode = addTyping();
       try {
         const res = await fetch(API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, sessionId })
+          body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
         });
         const data = await res.json();
-        removeTyping();
-        addMessage(data.response.content, false, { type: data.response.type, ...data.response });
-      } catch(e) {
-        removeTyping();
-        addMessage('抱歉，服务暂时不可用，正在为您转接人工客服…', false, { type: 'escalate' });
+        typingNode.remove();
+        addPost({
+          role: 'bot',
+          text: data.response?.content || '已收到。',
+          meta: data.response || null
+        });
+      } catch (e) {
+        typingNode.remove();
+        addPost({ role: 'bot', text: '服务暂时不可用，我先帮你记下这条消息。', meta: { type: 'escalate', content: '当前无法完成自动回复。' } });
       }
       sendBtn.disabled = false;
       input.focus();
     }
 
-    function sendQuick(text) {
-      input.value = text;
-      sendMsg();
-    }
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMsg();
+      }
+    });
+
+    addPost({
+      role: 'bot',
+      text: '欢迎来到小红书风客服页。你可以直接发文字，也可以上传图片或录一段语音，我会按社区私信的方式展示。',
+      meta: { type: 'order_list', content: '支持图片/语音附件' }
+    });
   </script>
 </body>
 </html>
