@@ -1,0 +1,17 @@
+{
+  "name": "enterprise-cs-agent",
+  "version": "1.0.0",
+  "description": "电商客服 Agent 应用 - 基于知识库 + 大模型",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智服 AI 客服 - 电商智能客服助手</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: #f0f2f5; height: 100vh; display: flex; justify-content: center; align-items: center; }
+    .container { width: 100%; max-width: 480px; height: 90vh; background: #fff; border-radius: 16px; box-shadow: 0 8px 40px rgba(0,0,0,0.12); display: flex; flex-direction: column; overflow: hidden; }
+    
+    /* Header */
+    .header { background: linear-gradient(135deg, #1677ff 0%, #4096ff 100%); color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+    .header .avatar { width: 42px; height: 42px; background: rgba(255,255,255,0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .header .info h1 { font-size: 16px; font-weight: 600; }
+    .header .info p { font-size: 12px; opacity: 0.85; }
+    .header .status { margin-left: auto; display: flex; align-items: center; gap: 6px; font-size: 12px; }
+    .status-dot { width: 8px; height: 8px; background: #52c41a; border-radius: 50%; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    
+    /* Chat Area */
+    .chat-area { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; background: #f5f7fa; }
+    .message { display: flex; gap: 8px; max-width: 85%; animation: fadeIn 0.3s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .message.user { margin-left: auto; flex-direction: row-reverse; }
+    .message .avatar { width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+    .message.bot .avatar { background: #e6f4ff; }
+    .message.user .avatar { background: #f6ffed; }
+    .bubble { padding: 10px 14px; border-radius: 12px; line-height: 1.6; font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+    .message.bot .bubble { background: white; color: #1f1f1f; border: 1px solid #e8e8e8; border-top-left-radius: 4px; }
+    .message.user .bubble { background: #1677ff; color: white; border-top-right-radius: 4px; }
+    
+    /* Order Card */
+    .order-card { background: #f6f8ff; border: 1px solid #d6e4ff; border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+    .order-card .product { font-weight: 600; color: #1f1f1f; }
+    .order-card .detail { font-size: 13px; color: #666; margin-top: 4px; }
+    
+    /* Logistics Timeline */
+    .logistics-timeline { margin-top: 8px; padding-left: 16px; border-left: 2px solid #1677ff; }
+    .logistics-item { padding: 4px 0; font-size: 13px; }
+    .logistics-item .time { color: #999; font-size: 12px; }
+    .logistics-item .desc { color: #333; }
+    
+    /* Refund Card */
+    .refund-card { background: #fff7e6; border: 1px solid #ffe58f; border-radius: 8px; padding: 10px 12px; margin-top: 6px; }
+    .refund-card .amount { font-size: 18px; font-weight: 700; color: #fa8c16; }
+    
+    /* Typing Indicator */
+    .typing { display: flex; gap: 4px; padding: 6px 0; }
+    .typing span { width: 6px; height: 6px; background: #999; border-radius: 50%; animation: typing 1.2s infinite; }
+    .typing span:nth-child(2) { animation-delay: 0.2s; }
+    .typing span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes typing { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+    
+    /* Quick Actions */
+    .quick-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+    .quick-btn { background: white; border: 1px solid #d9d9d9; border-radius: 20px; padding: 4px 12px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+    .quick-btn:hover { background: #1677ff; color: white; border-color: #1677ff; }
+    
+    /* Input Area */
+    .input-area { padding: 12px 16px; background: white; border-top: 1px solid #e8e8e8; display: flex; gap: 8px; align-items: center; }
+    .input-area input { flex: 1; padding: 10px 14px; border: 1px solid #d9d9d9; border-radius: 24px; outline: none; font-size: 14px; transition: border-color 0.2s; }
+    .input-area input:focus { border-color: #1677ff; }
+    .send-btn { width: 40px; height: 40px; background: #1677ff; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: background 0.2s; flex-shrink: 0; }
+    .send-btn:hover { background: #0958d9; }
+    .send-btn:disabled { background: #d9d9d9; cursor: not-allowed; }
+    
+    /* Escalation Banner */
+    .escalation { background: #fff1f0; border: 1px solid #ffccc7; border-radius: 8px; padding: 10px 12px; margin-top: 6px; font-size: 13px; color: #a8071a; }
+    .escalation .icon { font-size: 16px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="avatar">🤖</div>
+      <div class="info">
+        <h1>智服 AI 客服</h1>
+        <p>电商智能客服助手 v1.0</p>
+      </div>
+      <div class="status">
+        <div class="status-dot"></div>
+        <span>在线</span>
+      </div>
+    </div>
+    
+    <div class="chat-area" id="chatArea">
+      <div class="message bot">
+        <div class="avatar">🤖</div>
+        <div>
+          <div class="bubble">您好！我是智服 AI 客服，7×24 小时为您服务。🛍️\n\n我可以帮您：\n• 查询订单状态\n• 查询物流信息\n• 申请退款/查询退款进度\n• 解答售后政策问题\n\n请问有什么可以帮您？</div>
+          <div class="quick-actions">
+            <div class="quick-btn" onclick="sendQuick('我的订单到哪了？')">📦 查订单</div>
+            <div class="quick-btn" onclick="sendQuick('我的快递到哪了？')">🚚 查物流</div>
+            <div class="quick-btn" onclick="sendQuick('怎么申请退款？')">💰 查退款</div>
+            <div class="quick-btn" onclick="sendQuick('转人工')">👤 转人工</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="input-area">
+      <input type="text" id="msgInput" placeholder="输入您的问题…" onkeydown="if(event.key==='Enter')sendMsg()">
+      <button class="send-btn" id="sendBtn" onclick="sendMsg()">➤</button>
+    </div>
+  </div>
+
+  <script>
+    const API = '/api/chat';
+    const chatArea = document.getElementById('chatArea');
+    const input = document.getElementById('msgInput');
+    const sendBtn = document.getElementById('sendBtn');
+    let sessionId = 'user_' + Date.now();
+
+    function addMessage(text, isUser = false, extra = null) {
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${isUser ? 'user' : 'bot'}`;
+      msgDiv.innerHTML = `
+        <div class="avatar">${isUser ? '👤' : '🤖'}</div>
+        <div>
+          <div class="bubble">${text}</div>
+          ${renderExtra(extra)}
+        </div>
+      `;
+      chatArea.appendChild(msgDiv);
+      chatArea.scrollTop = chatArea.scrollHeight;
+      return msgDiv;
+    }
+
+    function renderExtra(extra) {
+      if (!extra) return '';
+      let html = '';
+      if (extra.type === 'order' || extra.type === 'order_list') {
+        const orders = extra.type === 'order' ? [extra.order] : extra.orders;
+        html += '<div class="order-card">' +
+          orders.map(o => `<div class="product">📦 ${o.product} ¥${o.price}</div><div class="detail">状态：${o.status}<br>下单：${o.createTime}</div>`).join('') +
+          '</div>';
+      }
+      if (extra.type === 'logistics' && extra.logistics) {
+        const l = extra.logistics;
+        html += '<div class="order-card"><div class="product">🚚 ${l.company} ${l.trackingNo}</div>' +
+          '<div class="logistics-timeline">' +
+          l.records.slice(-3).map(r => `<div class="logistics-item"><div class="time">${r.time}</div><div class="desc">${r.desc}</div></div>`).join('') +
+          '</div></div>';
+      }
+      if (extra.type === 'refund' && extra.refund) {
+        const r = extra.refund;
+        html += `<div class="refund-card"><div class="amount">退款 ¥${r.amount}</div><div class="detail">状态：${r.status}<br>预计到账：${r.estimatedArrival}</div></div>`;
+      }
+      if (extra.type === 'escalate') {
+        html += `<div class="escalation">⚠️ ${extra.content}</div>`;
+      }
+      return html;
+    }
+
+    function addTyping() {
+      const div = document.createElement('div');
+      div.className = 'message bot';
+      div.id = 'typing';
+      div.innerHTML = `<div class="avatar">🤖</div><div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+      chatArea.appendChild(div);
+      chatArea.scrollTop = chatArea.scrollHeight;
+    }
+
+    function removeTyping() {
+      const el = document.getElementById('typing');
+      if (el) el.remove();
+    }
+
+    async function sendMsg() {
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      sendBtn.disabled = true;
+      addMessage(text, true);
+      addTyping();
+      try {
+        const res = await fetch(API, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, sessionId })
+        });
+        const data = await res.json();
+        removeTyping();
+        addMessage(data.response.content, false, { type: data.response.type, ...data.response });
+      } catch(e) {
+        removeTyping();
+        addMessage('抱歉，服务暂时不可用，正在为您转接人工客服…', false, { type: 'escalate' });
+      }
+      sendBtn.disabled = false;
+      input.focus();
+    }
+
+    function sendQuick(text) {
+      input.value = text;
+      sendMsg();
+    }
+  </script>
+</body>
+</html>
