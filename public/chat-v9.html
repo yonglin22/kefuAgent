@@ -3,13 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>电商客服 Agent 知识库 v1.1</title>
-  <script>
-    location.replace('https://yonglin22.github.io/kefuAgent/chat-v9.html?wx=20260604');
-  </script>
   <style>
     :root {
       --bg: #f5f5f7;
@@ -1005,16 +999,6 @@
       if (wrap) wrap.innerHTML = escapeHtml(text);
     }
 
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        return await fetch(url, { ...options, signal: controller.signal });
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
     function localFallbackReply(text) {
       const q = String(text || '').trim();
       const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
@@ -1123,23 +1107,23 @@
       renderPreview();
       const botNode = addPost({
         role: 'bot',
-        text: localFallbackReply(text),
-        meta: { type: 'local', content: '正在获取结果，请稍候。' }
+        text: '正在查询，请稍候。',
+        meta: { type: 'loading', content: '正在查询，请稍候。' }
       });
-      fetchWithTimeout(API, {
+      fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
-      }, 10000)
-        .then(res => res.json())
-        .then(data => {
-          const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '';
-          if (replyText) {
-            updatePostText(botNode, replyText);
-            botNode.dataset.meta = JSON.stringify(data.response || {});
-          }
+      })
+        .then(async res => {
+          const data = await res.json();
+          const replyText = data.response?.displayContent || data.response?.content || data.response?.message || localFallbackReply(text);
+          updatePostText(botNode, replyText);
+          botNode.dataset.meta = JSON.stringify(data.response || {});
         })
-        .catch(() => {})
+        .catch(() => {
+          updatePostText(botNode, localFallbackReply(text));
+        })
         .finally(() => {
           sendBtn.disabled = false;
           input.focus();
