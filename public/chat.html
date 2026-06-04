@@ -994,6 +994,15 @@
       return addPost({ role: 'bot', typing: true });
     }
 
+    function localFallbackReply(text) {
+      const q = String(text || '');
+      if (/退款|退货|到账/.test(q)) return '我先帮您看退款问题。请直接发订单号，我继续帮您查退款进度。';
+      if (/物流|快递|签收|到哪/.test(q)) return '我先帮您看物流问题。请直接发订单号，我继续帮您查物流轨迹。';
+      if (/订单|下单|发货/.test(q)) return '我先帮您看订单问题。请直接发订单号，我继续帮您查订单状态。';
+      if (/人工|客服|转人工/.test(q)) return '好的，我马上帮您转人工客服。';
+      return '我先帮您看下这个问题。你可以补充订单号、图片或更多细节，我继续帮你处理。';
+    }
+
     async function startVoiceRecord() {
       if (!hasVoiceCaptureSupport) {
         alert('当前浏览器不支持语音录制，请改用文字输入。');
@@ -1087,7 +1096,11 @@
         });
       } catch (e) {
         typingNode.remove();
-        addPost({ role: 'bot', text: '服务暂时不可用，我先帮你记下这条消息。', meta: { type: 'escalate', content: '当前无法完成自动回复。' } });
+        addPost({
+          role: 'bot',
+          text: localFallbackReply(text),
+          meta: { type: 'fallback', content: '接口暂时不可用，已切换为本地兜底回复。' }
+        });
       }
       sendBtn.disabled = false;
       input.focus();
