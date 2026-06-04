@@ -217,10 +217,10 @@ function buildFallbackResponse(normalizedMessage, session = null) {
   const q = String(normalizedMessage || '').trim();
   const lastOrderId = getLastOrderId(session || { messages: [] }, q);
   const rules = [
+    { intent: 'afterSales', test: /七天无理由|退货政策|退货规则|售后|破损|损坏|开裂|碎了|发错|错发|少件|漏发|质量问题|质量有问题|瑕疵|不好用/, type: 'policy', content: '我先帮您看售后规则。请把订单号发我，我继续帮您处理。' },
     { intent: 'delivery', test: /已签收|没收到|未收到|签收异常/, type: 'order', content: '我先帮您看签收异常。请把订单号发我，我继续帮您处理。' },
-    { intent: 'refund', test: /退款|退货|退款进度|原路退回/, type: 'refund', content: '我先帮您看退款相关问题。请把订单号发我，我继续帮您处理。' },
+    { intent: 'refund', test: /退款|退款进度|原路退回/, type: 'refund', content: '我先帮您看退款相关问题。请把订单号发我，我继续帮您处理。' },
     { intent: 'exchange', test: /换货|补发/, type: 'refund', content: '我先帮您看换货或补发问题。请把订单号发我，我继续帮您处理。' },
-    { intent: 'afterSales', test: /破损|损坏|开裂|碎了|发错|错发|少件|漏发|质量问题|质量有问题|瑕疵|不好用|售后|退货政策|退货规则|七天无理由/, type: 'refund', content: '我先帮您看售后规则。请把订单号发我，我继续帮您处理。' },
     { intent: 'logisticsDelay', test: /物流信息不更新|物流不更新|物流延迟|物流信息卡住|物流没更新/, type: 'logistics', content: '我先帮您看物流问题。请把订单号发我，我继续帮您查物流轨迹。' },
     { intent: 'logistics', test: /物流|快递|轨迹|物流信息|到哪/, type: 'logistics', content: '我先帮您看物流问题。您可以直接发订单号，我来帮您查物流轨迹。' },
     { intent: 'order', test: /订单|下单|发货/, type: 'order', content: '我先帮您看订单问题。您可以直接发订单号，我来帮您查询订单状态。' },
