@@ -3,13 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-  <meta http-equiv="Pragma" content="no-cache">
-  <meta http-equiv="Expires" content="0">
   <title>电商客服 Agent 知识库 v1.1</title>
-  <script>
-    location.replace('https://yonglin22.github.io/kefuAgent/chat-v6.html?wx=20260604');
-  </script>
   <style>
     :root {
       --bg: #f5f5f7;
@@ -757,7 +751,6 @@
     let faqBatchIndex = 0;
     let inputMode = 'text';
     let pendingIntent = null;
-    let lastOrderId = '';
 
     const FAQ_BATCHES = [
       [
@@ -1000,11 +993,24 @@
       return addPost({ role: 'bot', typing: true });
     }
 
+    function updatePostText(postNode, text) {
+      if (!postNode) return;
+      const wrap = postNode.querySelector('.bubble-wrap.bot');
+      if (wrap) wrap.innerHTML = escapeHtml(text);
+    }
+
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     function localFallbackReply(text) {
       const q = String(text || '').trim();
-      const directMatch = q.match(/\b\d{6,20}\b/);
-      if (directMatch) lastOrderId = directMatch[0];
-      const hasLastOrder = !!lastOrderId;
       const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
       const rules = [
         { intent: 'delivery', test: /已签收|没收到|未收到|签收异常/, reply: '我先帮您看签收异常。请把订单号发我，我继续帮您处理。' },
@@ -1016,14 +1022,14 @@
         { intent: 'order', test: /订单|下单|发货/, reply: '我先帮您看订单问题。您可以直接发订单号，我来帮您查询订单状态。' },
         { intent: 'human', test: /人工|客服|转人工/, reply: '好的，我马上帮您转人工客服。' }
       ];
-      if (isOrderLike || hasLastOrder) {
-        if (pendingIntent === 'delivery') return '订单号收到，我先帮您查签收异常。若还没显示结果，请再核对一次订单号。';
-        if (pendingIntent === 'refund') return '订单号收到，我先帮您查退款进度。若还没显示结果，请再核对一次订单号。';
-        if (pendingIntent === 'exchange') return '订单号收到，我先帮您查换货或补发进度。若还没显示结果，请再核对一次订单号。';
-        if (pendingIntent === 'afterSales') return '订单号收到，我先帮您查售后规则。若还没显示结果，请再核对一次订单号。';
-        if (pendingIntent === 'logisticsDelay' || pendingIntent === 'logistics') return '订单号收到，我先帮您查物流轨迹。若还没显示结果，请再核对一次订单号。';
-        if (pendingIntent === 'order') return '订单号收到，我先帮您查订单状态。若还没显示结果，请再核对一次订单号。';
-        return '我收到订单号了，我先帮您继续查询。若还没显示结果，请再核对一次订单号。';
+      if (isOrderLike) {
+        if (pendingIntent === 'delivery') return '订单号收到，我先帮您查签收异常。';
+        if (pendingIntent === 'refund') return '订单号收到，我先帮您查退款进度。';
+        if (pendingIntent === 'exchange') return '订单号收到，我先帮您查换货或补发进度。';
+        if (pendingIntent === 'afterSales') return '订单号收到，我先帮您查售后规则。';
+        if (pendingIntent === 'logisticsDelay' || pendingIntent === 'logistics') return '订单号收到，我先帮您查物流轨迹。';
+        if (pendingIntent === 'order') return '订单号收到，我先帮您查订单状态。';
+        return '我收到订单号了，我先帮您继续查询。';
       }
       for (const rule of rules) {
         if (rule.test.test(q)) {
@@ -1097,10 +1103,9 @@
 
     setInputMode('text');
 
+
     async function sendMsg() {
       const text = input.value.trim();
-      const directMatch = text.match(/\b\d{6,20}\b/);
-      if (directMatch) lastOrderId = directMatch[0];
       if (!text && attachments.length === 0) return;
       sendBtn.disabled = true;
 
@@ -1112,31 +1117,29 @@
       attachments = [];
       renderPreview();
 
-      const typingNode = addTyping();
-      try {
-        const res = await fetch(API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
+      const botNode = addPost({
+        role: 'bot',
+        text: localFallbackReply(text),
+        meta: { type: 'local', content: '请稍候。' }
+      });
+      fetchWithTimeout(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
+      }, 10000)
+        .then(res => res.json())
+        .then(data => {
+          const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '';
+          if (replyText) {
+            updatePostText(botNode, replyText);
+            botNode.dataset.meta = JSON.stringify(data.response || {});
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          sendBtn.disabled = false;
+          input.focus();
         });
-        const data = await res.json();
-        typingNode.remove();
-        const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '已收到。';
-        addPost({
-          role: 'bot',
-          text: replyText,
-          meta: data.response || null
-        });
-      } catch (e) {
-        typingNode.remove();
-        addPost({
-          role: 'bot',
-          text: localFallbackReply(text),
-          meta: { type: 'fallback', content: '接口暂时不可用，已切换为本地兜底回复。' }
-        });
-      }
-      sendBtn.disabled = false;
-      input.focus();
     }
 
     function sendQuick(text) {
