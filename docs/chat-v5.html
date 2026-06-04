@@ -1120,7 +1120,7 @@
       const botNode = addPost({
         role: 'bot',
         text: localFallbackReply(text),
-        meta: { type: 'local', content: '先显示本地结果，联网结果稍后覆盖。' }
+        meta: { type: 'local', content: '正在获取结果，请稍候。' }
       });
       fetchWithTimeout(API, {
         method: 'POST',
@@ -1135,9 +1135,11 @@
             botNode.dataset.meta = JSON.stringify(data.response || {});
           }
         })
-        .catch(() => {});
-      sendBtn.disabled = false;
-      input.focus();
+        .catch(() => {})
+        .finally(() => {
+          sendBtn.disabled = false;
+          input.focus();
+        });
     }
 
     function sendQuick(text) {
