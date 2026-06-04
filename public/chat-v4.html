@@ -993,6 +993,16 @@
       return addPost({ role: 'bot', typing: true });
     }
 
+    async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        return await fetch(url, { ...options, signal: controller.signal });
+      } finally {
+        clearTimeout(timer);
+      }
+    }
+
     function localFallbackReply(text) {
       const q = String(text || '').trim();
       const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
@@ -1102,11 +1112,11 @@
 
       const typingNode = addTyping();
       try {
-        const res = await fetch(API, {
+        const res = await fetchWithTimeout(API, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
-        });
+        }, 12000);
         const data = await res.json();
         typingNode.remove();
         const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '已收到。';
@@ -1117,10 +1127,11 @@
         });
       } catch (e) {
         typingNode.remove();
+        const isAbort = e && (e.name === 'AbortError' || String(e.message || '').includes('aborted'));
         addPost({
           role: 'bot',
-          text: localFallbackReply(text),
-          meta: { type: 'fallback', content: '接口暂时不可用，已切换为本地兜底回复。' }
+          text: isAbort ? '回复超时了，我先直接帮你查本地兜底结果。' + localFallbackReply(text) : localFallbackReply(text),
+          meta: { type: 'fallback', content: isAbort ? '接口超时，已切换为本地兜底回复。' : '接口暂时不可用，已切换为本地兜底回复。' }
         });
       }
       sendBtn.disabled = false;
