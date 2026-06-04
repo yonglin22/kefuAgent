@@ -1119,23 +1119,23 @@
 
       const botNode = addPost({
         role: 'bot',
-        text: localFallbackReply(text),
-        meta: { type: 'local', content: '请稍候。' }
+        text: '正在查询，请稍候。',
+        meta: { type: 'loading', content: '正在查询，请稍候。' }
       });
       fetchWithTimeout(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
       }, 10000)
-        .then(res => res.json())
-        .then(data => {
-          const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '';
-          if (replyText) {
-            updatePostText(botNode, replyText);
-            botNode.dataset.meta = JSON.stringify(data.response || {});
-          }
+        .then(async res => {
+          const data = await res.json();
+          const replyText = data.response?.displayContent || data.response?.content || data.response?.message || localFallbackReply(text);
+          updatePostText(botNode, replyText);
+          botNode.dataset.meta = JSON.stringify(data.response || {});
         })
-        .catch(() => {})
+        .catch(() => {
+          updatePostText(botNode, localFallbackReply(text));
+        })
         .finally(() => {
           sendBtn.disabled = false;
           input.focus();
