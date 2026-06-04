@@ -203,33 +203,31 @@ function queryRefund(orderId) {
 
 function buildFallbackResponse(normalizedMessage) {
   const q = String(normalizedMessage || '');
-  if (/退款|退货|退款进度|到账/.test(q)) {
-    return {
-      type: 'refund',
-      content: '我先帮您看退款相关问题。您可以告诉我订单号，我来继续查询退款进度。'
-    };
-  }
-  if (/物流|快递|到哪|签收/.test(q)) {
-    return {
-      type: 'logistics',
-      content: '我先帮您看物流问题。您可以直接发订单号，我来帮您查物流轨迹。'
-    };
-  }
-  if (/订单|下单|发货/.test(q)) {
-    return {
-      type: 'order',
-      content: '我先帮您看订单问题。您可以直接发订单号，我来帮您查询订单状态。'
-    };
-  }
-  if (/转人工|人工|客服/.test(q)) {
-    return {
-      type: 'escalate',
-      content: '好的，我马上帮您转人工客服。'
-    };
+  const rules = [
+    { test: /已签收|没收到|未收到|签收异常/, type: 'refund', content: '我先帮您看签收异常。请把订单号发我，我继续帮您处理。' },
+    { test: /退款|退货|退款进度|原路退回/, type: 'refund', content: '我先帮您看退款相关问题。请把订单号发我，我继续帮您处理。' },
+    { test: /换货|补发/, type: 'refund', content: '我先帮您看换货或补发问题。请把订单号发我，我继续帮您处理。' },
+    { test: /破损|损坏|开裂|碎了/, type: 'refund', content: '我先帮您看破损售后问题。请把订单号发我，我继续帮您处理。' },
+    { test: /发错|错发|少件|漏发/, type: 'refund', content: '我先帮您看发错或漏发售后。请把订单号发我，我继续帮您处理。' },
+    { test: /质量问题|质量有问题|瑕疵|不好用/, type: 'refund', content: '我先帮您看质量问题售后。请把订单号发我，我继续帮您处理。' },
+    { test: /售后|退货政策|退货规则|七天无理由/, type: 'refund', content: '我先帮您看售后规则。请把订单号发我，我继续帮您处理。' },
+    { test: /物流|快递|轨迹|物流信息|到哪/, type: 'logistics', content: '我先帮您看物流问题。您可以直接发订单号，我来帮您查物流轨迹。' },
+    { test: /订单|下单|发货/, type: 'order', content: '我先帮您看订单问题。您可以直接发订单号，我来帮您查询订单状态。' },
+    { test: /人工|客服|转人工/, type: 'escalate', content: '好的，我马上帮您转人工客服。' }
+  ];
+  for (const rule of rules) {
+    if (rule.test.test(q)) {
+      return {
+        type: rule.type,
+        content: rule.content,
+        displayContent: rule.content
+      };
+    }
   }
   return {
     type: 'text',
-    content: '我先帮您看下这个问题。您可以补充一下订单号、图片或更多细节，我继续帮您处理。'
+    content: '我先帮您看下这个问题。您可以补充一下订单号、图片或更多细节，我继续帮您处理。',
+    displayContent: '我先帮您看下这个问题。您可以补充一下订单号、图片或更多细节，我继续帮您处理。'
   };
 }
 
