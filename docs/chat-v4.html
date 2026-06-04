@@ -993,16 +993,6 @@
       return addPost({ role: 'bot', typing: true });
     }
 
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        return await fetch(url, { ...options, signal: controller.signal });
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
     function localFallbackReply(text) {
       const q = String(text || '').trim();
       const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
@@ -1097,7 +1087,6 @@
 
     setInputMode('text');
 
-    const isWeChat = /MicroMessenger/i.test(navigator.userAgent || '');
 
     async function sendMsg() {
       const text = input.value.trim();
@@ -1112,32 +1101,11 @@
       attachments = [];
       renderPreview();
 
-      const botNode = addPost({
+      addPost({
         role: 'bot',
         text: localFallbackReply(text),
-        meta: { type: 'fallback', content: '先返回本地结果。' }
+        meta: { type: 'local', content: '当前为本地稳定回复模式，已关闭联网结果。' }
       });
-      if (isWeChat) {
-        sendBtn.disabled = false;
-        input.focus();
-        return;
-      }
-      try {
-        const res = await Promise.race([
-          fetchWithTimeout(API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
-          }, 8000),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
-        ]);
-        const data = await res.json();
-        const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '已收到。';
-        updatePostText(botNode, replyText);
-        botNode.dataset.meta = JSON.stringify(data.response || {});
-      } catch (e) {
-        updatePostText(botNode, localFallbackReply(text));
-      }
       sendBtn.disabled = false;
       input.focus();
     }
