@@ -732,6 +732,7 @@
     const API = location.protocol === 'file:'
       ? 'https://cs-agent-ashy.vercel.app/api/chat'
       : '/api/chat';
+    const hasVoiceCaptureSupport = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia && window.MediaRecorder);
     const chatArea = document.getElementById('chatArea');
     const input = document.getElementById('msgInput');
     const sendBtn = document.getElementById('sendBtn');
@@ -787,7 +788,16 @@
     }
 
     function toggleLeftInputIcon() {
-      setInputMode(inputMode === 'text' ? 'voice' : 'text');
+      if (inputMode === 'text') {
+        if (!hasVoiceCaptureSupport) {
+          alert('当前浏览器不支持语音录制，请直接用文字发送。');
+          setInputMode('text');
+          return;
+        }
+        setInputMode('voice');
+        return;
+      }
+      setInputMode('text');
     }
 
     document.addEventListener('click', (e) => {
@@ -803,7 +813,16 @@
       composerMenu.classList.remove('open');
       if (mode === 'voice') {
         input.blur();
+        if (!hasVoiceCaptureSupport) {
+          voiceTrigger.textContent = '当前不支持语音';
+          voiceTrigger.disabled = true;
+        } else {
+          voiceTrigger.disabled = false;
+          voiceTrigger.textContent = recording ? '松开结束' : '按住 说话';
+        }
       } else {
+        voiceTrigger.disabled = false;
+        voiceTrigger.textContent = '按住 说话';
         input.focus();
       }
     }
@@ -976,6 +995,11 @@
     }
 
     async function startVoiceRecord() {
+      if (!hasVoiceCaptureSupport) {
+        alert('当前浏览器不支持语音录制，请改用文字输入。');
+        setInputMode('text');
+        return;
+      }
       if (recording) {
         if (recorder && recorder.state !== 'inactive') recorder.stop();
         return;
@@ -986,20 +1010,27 @@
         recorder = new MediaRecorder(stream);
         recorder.ondataavailable = e => { if (e.data.size > 0) recordedChunks.push(e.data); };
         recorder.onstop = async () => {
-          const blob = new Blob(recordedChunks, { type: 'audio/webm' });
-          const file = new File([blob], `voice-${Date.now()}.webm`, { type: blob.type });
-          await addFiles([file], 'audio');
-          stream.getTracks().forEach(t => t.stop());
-          recording = false;
-          voiceTrigger.textContent = '按住 说话';
-          voiceTrigger.classList.remove('recording');
+          try {
+            const blob = new Blob(recordedChunks, { type: 'audio/webm' });
+            const file = new File([blob], `voice-${Date.now()}.webm`, { type: blob.type });
+            await addFiles([file], 'audio');
+          } finally {
+            stream.getTracks().forEach(t => t.stop());
+            recording = false;
+            voiceTrigger.textContent = '按住 说话';
+            voiceTrigger.classList.remove('recording');
+          }
         };
         recorder.start();
         recording = true;
         voiceTrigger.textContent = '松开结束';
         voiceTrigger.classList.add('recording');
       } catch (e) {
-        alert('无法开启麦克风，请检查浏览器权限。');
+        recording = false;
+        voiceTrigger.textContent = '按住 说话';
+        voiceTrigger.classList.remove('recording');
+        setInputMode('text');
+        alert('无法开启麦克风，请检查浏览器权限或改用文字输入。');
       }
     }
 
@@ -1048,9 +1079,10 @@
         });
         const data = await res.json();
         typingNode.remove();
+        const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '已收到。';
         addPost({
           role: 'bot',
-          text: data.response?.content || '已收到。',
+          text: replyText,
           meta: data.response || null
         });
       } catch (e) {
@@ -1067,6 +1099,14 @@
       sendMsg();
     }
 
+    window.toggleLeftInputIcon = toggleLeftInputIcon;
+    window.switchFaqBatch = switchFaqBatch;
+    window.pickImages = pickImages;
+    window.pickFiles = pickFiles;
+    window.removeAttachment = removeAttachment;
+    window.toggleComposerMenu = toggleComposerMenu;
+    window.sendMsg = sendMsg;
+
     input.addEventListener('keydown', (e) => {
       if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
@@ -1079,6 +1119,10 @@
       text: '嗨，我在。你直接发一句话、图片或者语音都行。',
       meta: null
     });
+    if (!hasVoiceCaptureSupport) {
+      voiceTrigger.textContent = '当前不支持语音';
+      voiceTrigger.disabled = true;
+    }
     mountFaqPanel(welcomePost);
     renderFaqBatch();
     renderQuickRow();

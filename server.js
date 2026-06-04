@@ -246,6 +246,36 @@ function searchFAQ(query) {
   return results.sort((a, b) => b.score - a.score).slice(0, 3);
 }
 
+function normalizeAssistantContent(value, fallback = '') {
+  if (value == null) return fallback;
+  if (typeof value !== 'string') return String(value);
+  const trimmed = value.trim();
+  if (!trimmed) return fallback;
+  if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      if (typeof parsed === 'string') return parsed;
+      if (parsed && typeof parsed === 'object') {
+        return parsed.displayContent || parsed.content || parsed.message || fallback || '已收到。';
+      }
+    } catch (e) {
+      // Ignore JSON parse errors and fall through.
+    }
+  }
+  return trimmed;
+}
+
+function buildResponsePayload({ type = 'text', content = '', displayContent = '', humanSummary = '', extra = {} }) {
+  const safeDisplay = normalizeAssistantContent(displayContent || content, '已收到。');
+  return {
+    type,
+    content: normalizeAssistantContent(content, safeDisplay),
+    displayContent: safeDisplay,
+    humanSummary,
+    ...extra
+  };
+}
+
 // ============================================================
 // DeepSeek LLM 调用
 // ============================================================
@@ -495,10 +525,10 @@ app.post('/api/chat', async (req, res) => {
     if (!CONFIG.deepSeek.apiKey) {
       const fallback = buildFallbackResponse(normalizedMessage);
       return res.json({
-        response: {
+        response: buildResponsePayload({
           ...fallback,
           humanSummary: `缺少 DEEPSEEK_API_KEY。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
-        },
+        }),
         latency: `${Date.now() - startTime}ms`,
         sessionId
       });
@@ -531,11 +561,12 @@ app.post('/api/chat', async (req, res) => {
           { role: 'assistant', content: `[转人工：${args.reason}]` }
         );
         return res.json({
-          response: {
+          response: buildResponsePayload({
             type: 'escalate',
             content: `好的，我马上为您转接人工客服。${args.reason}。请稍候，我已将对话摘要推送给客服坐席...`,
+            displayContent: `好的，我马上为您转接人工客服。${args.reason}。请稍候，我已将对话摘要推送给客服坐席...`,
             humanSummary: `转人工原因：${args.reason}。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
-          },
+          }),
           latency: `${Date.now() - startTime}ms`,
           sessionId
         });
@@ -548,7 +579,7 @@ app.post('/api/chat', async (req, res) => {
       );
 
       const finalRes = await callDeepSeek(messages);
-      const finalContent = finalRes.choices[0].message.content;
+      const finalContent = normalizeAssistantContent(finalRes.choices[0].message.content, '已收到。');
 
       // 保存对话历史
       session.messages.push(
@@ -561,18 +592,21 @@ app.post('/api/chat', async (req, res) => {
       let extra = {};
       try {
         const parsed = JSON.parse(finalContent);
-        if (parsed.type) responseType = parsed.type;
-        extra = parsed;
+        if (parsed && typeof parsed === 'object') {
+          if (parsed.type) responseType = parsed.type;
+          extra = parsed;
+        }
       } catch (e) {
         // 非 JSON，按普通文本处理
       }
 
       return res.json({
-        response: {
+        response: buildResponsePayload({
           type: responseType,
           content: finalContent,
-          ...extra
-        },
+          displayContent: extra.displayContent || finalContent,
+          extra
+        }),
         latency: `${Date.now() - startTime}ms`,
         sessionId,
         usage: deepSeekRes.usage
@@ -587,10 +621,11 @@ app.post('/api/chat', async (req, res) => {
     );
 
     res.json({
-      response: {
+      response: buildResponsePayload({
         type: 'text',
-        content
-      },
+        content,
+        displayContent: content
+      }),
       latency: `${Date.now() - startTime}ms`,
       sessionId,
       usage: deepSeekRes.usage
@@ -599,11 +634,12 @@ app.post('/api/chat', async (req, res) => {
   } catch (error) {
     console.error('Chat API error:', error.message);
     res.json({
-      response: {
+      response: buildResponsePayload({
         type: 'escalate',
         content: `抱歉，系统暂时出现了问题。我正在为您转接人工客服处理，请稍候...`,
+        displayContent: `抱歉，系统暂时出现了问题。我正在为您转接人工客服处理，请稍候...`,
         humanSummary: `系统错误：${error.message}。用户原话："${normalizedMessage || '[仅附件消息]'}"。`
-      },
+      }),
       latency: `${Date.now() - startTime}ms`,
       sessionId,
       error: true
