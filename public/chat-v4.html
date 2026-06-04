@@ -993,6 +993,12 @@
       return addPost({ role: 'bot', typing: true });
     }
 
+    function updatePostText(postNode, text) {
+      if (!postNode) return;
+      const wrap = postNode.querySelector('.bubble-wrap.bot');
+      if (wrap) wrap.innerHTML = escapeHtml(text);
+    }
+
     async function fetchWithTimeout(url, options = {}, timeoutMs = 12000) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -1109,30 +1115,26 @@
       autoResize();
       attachments = [];
       renderPreview();
-
-      const typingNode = addTyping();
+      const botNode = addPost({
+        role: 'bot',
+        text: localFallbackReply(text),
+        meta: { type: 'fallback', content: '先返回本地结果，联网结果稍后补充。' }
+      });
       try {
-        const res = await fetchWithTimeout(API, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
-        }, 12000);
+        const res = await Promise.race([
+          fetchWithTimeout(API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
+          }, 8000),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 8000))
+        ]);
         const data = await res.json();
-        typingNode.remove();
         const replyText = data.response?.displayContent || data.response?.content || data.response?.message || '已收到。';
-        addPost({
-          role: 'bot',
-          text: replyText,
-          meta: data.response || null
-        });
+        updatePostText(botNode, replyText);
+        botNode.dataset.meta = JSON.stringify(data.response || {});
       } catch (e) {
-        typingNode.remove();
-        const isAbort = e && (e.name === 'AbortError' || String(e.message || '').includes('aborted'));
-        addPost({
-          role: 'bot',
-          text: isAbort ? '回复超时了，我先直接帮你查本地兜底结果。' + localFallbackReply(text) : localFallbackReply(text),
-          meta: { type: 'fallback', content: isAbort ? '接口超时，已切换为本地兜底回复。' : '接口暂时不可用，已切换为本地兜底回复。' }
-        });
+        updatePostText(botNode, localFallbackReply(text));
       }
       sendBtn.disabled = false;
       input.focus();
