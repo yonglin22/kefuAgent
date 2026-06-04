@@ -8,224 +8,70 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <title>红薯客服</title>
   <style>
-    :root {
-      --bg1: #fff7f4;
-      --bg2: #fff;
-      --text: #241b18;
-      --muted: #8f7f78;
-      --primary: #ff4d4f;
-      --primary2: #ff7a45;
-      --line: rgba(255,93,93,0.12);
-      --shadow: 0 20px 50px rgba(255,93,93,0.12);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { margin: 0; height: 100%; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-      color: var(--text);
+    :root { --primary:#ff4d4f; --primary2:#ff7a45; --text:#241b18; --muted:#8f7f78; }
+    *{box-sizing:border-box} html,body{margin:0;height:100%}
+    body{
+      font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      color:var(--text);
       background:
-        radial-gradient(circle at top left, rgba(255,122,69,0.18), transparent 36%),
-        radial-gradient(circle at bottom right, rgba(255,77,79,0.12), transparent 32%),
-        linear-gradient(180deg, #fffaf8 0%, #fff 100%);
+        radial-gradient(circle at top left, rgba(255,122,69,.16), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255,77,79,.12), transparent 34%),
+        linear-gradient(180deg,#fffaf8 0%,#fff 100%);
     }
-
-    .wrap {
-      min-height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
+    .wrap{min-height:100%;display:flex;align-items:center;justify-content:center;padding:16px}
+    .card{
+      width:min(100%,420px);border:1px solid rgba(255,93,93,.10);border-radius:28px;
+      background:rgba(255,255,255,.9);box-shadow:0 20px 50px rgba(255,93,93,.10);overflow:hidden
     }
-
-    .card {
-      width: min(100%, 430px);
-      border: 1px solid rgba(255,93,93,0.10);
-      border-radius: 28px;
-      background: rgba(255,255,255,0.88);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-      overflow: hidden;
+    .hero{padding:26px 20px 18px;border-bottom:1px solid rgba(0,0,0,.05)}
+    .badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:rgba(255,93,93,.08);color:var(--primary);font-size:12px;font-weight:700}
+    h1{margin:14px 0 0;font-size:30px;line-height:1.1}
+    .sub{margin-top:10px;color:var(--muted);font-size:14px;line-height:1.7}
+    .cta{padding:18px 20px 22px;display:grid;gap:10px}
+    .btn{
+      display:flex;align-items:center;justify-content:center;text-decoration:none;min-height:54px;border-radius:16px;
+      font-size:15px;font-weight:800;transition:transform .15s ease;user-select:none
     }
-
-    .hero {
-      padding: 28px 22px 18px;
-      border-bottom: 1px solid rgba(0,0,0,0.05);
-    }
-
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,93,93,0.08);
-      color: var(--primary);
-      font-size: 12px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 30px;
-      line-height: 1.1;
-      letter-spacing: -0.02em;
-    }
-
-    .sub {
-      margin-top: 10px;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    .feature {
-      margin-top: 18px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .pill-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .pill {
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: #fff7f6;
-      border: 1px solid rgba(255,93,93,0.12);
-      color: #5d3f38;
-      font-size: 12px;
-      font-weight: 600;
-    }
-
-    .panel {
-      margin: 18px 22px 0;
-      padding: 16px;
-      border-radius: 22px;
-      background: linear-gradient(180deg, #fff, #fff8f5);
-      border: 1px solid var(--line);
-    }
-
-    .panel-title {
-      font-size: 14px;
-      font-weight: 800;
-      margin-bottom: 10px;
-    }
-
-    .steps {
-      display: grid;
-      gap: 10px;
-    }
-
-    .step {
-      padding: 12px 14px;
-      border-radius: 16px;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.05);
-      color: #473530;
-      font-size: 13px;
-      line-height: 1.6;
-    }
-
-    .actions {
-      padding: 18px 22px 22px;
-      display: grid;
-      gap: 10px;
-    }
-
-    .btn {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-decoration: none;
-      min-height: 52px;
-      border-radius: 16px;
-      font-size: 15px;
-      font-weight: 800;
-      transition: transform .15s ease, opacity .15s ease;
-    }
-
-    .btn:active { transform: scale(0.99); }
-
-    .primary {
-      color: #fff;
-      background: linear-gradient(135deg, var(--primary), var(--primary2));
-      box-shadow: 0 14px 24px rgba(255,93,93,0.22);
-    }
-
-    .secondary {
-      color: var(--text);
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.08);
-    }
-
-    .mini {
-      display: block;
-      text-align: center;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
-      padding: 0 22px 24px;
-    }
-
-    @media (max-width: 480px) {
-      .wrap { padding: 12px; align-items: flex-start; }
-      .card { width: 100%; border-radius: 24px; }
-      .hero { padding: 22px 18px 16px; }
-      h1 { font-size: 26px; }
-      .panel, .actions { margin-left: 18px; margin-right: 18px; }
-    }
+    .btn:active{transform:scale(.99)}
+    .primary{color:#fff;background:linear-gradient(135deg,var(--primary),var(--primary2));box-shadow:0 14px 24px rgba(255,93,93,.22)}
+    .secondary{color:var(--text);background:#fff;border:1px solid rgba(0,0,0,.08)}
+    .tips{padding:0 20px 22px;color:var(--muted);font-size:12px;line-height:1.6}
+    .link{word-break:break-all}
+    @media (max-width:480px){.wrap{padding:12px;align-items:flex-start}.card{width:100%;border-radius:24px}h1{font-size:26px}}
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="card">
-      <section class="hero">
-        <div class="badge">微信打开更稳 · 轻量落地页</div>
+      <div class="hero">
+        <div class="badge">微信一键打开</div>
         <h1>红薯客服</h1>
-        <div class="sub">一页就能进客服。先看简介，再打开聊天页，适合微信内置浏览器直接访问。</div>
-        <div class="pill-row">
-          <span class="pill">订单查询</span>
-          <span class="pill">物流追踪</span>
-          <span class="pill">退款售后</span>
-          <span class="pill">图片 / 语音</span>
-        </div>
-      </section>
-
-      <div class="panel">
-        <div class="panel-title">你会看到什么</div>
-        <div class="steps">
-          <div class="step">1. 先进入轻量首页，加载快，适合微信直接打开。</div>
-          <div class="step">2. 点击「打开客服聊天」进入完整客服页面。</div>
-          <div class="step">3. 可直接发文字、图片、文件或语音。</div>
-        </div>
+        <div class="sub">点一下直接进客服聊天页。适合微信里一键打开，也可复制链接到浏览器。</div>
       </div>
-
-      <div class="actions">
-        <a class="btn primary" id="openChatBtn" href="/chat.html">打开客服聊天</a>
-        <a class="btn secondary" id="openChatNewBtn" href="/chat.html" target="_blank" rel="noopener">新窗口打开</a>
+      <div class="cta">
+        <a class="btn primary" id="openChatBtn" href="/chat.html">一键打开客服</a>
+        <a class="btn secondary" id="copyBtn" href="javascript:void(0)">复制链接</a>
       </div>
-
-      <div class="mini">如果微信里还是受限，建议点右上角“...”，选择在浏览器中打开。<br><span id="directLinkText"></span></div>
+      <div class="tips">微信里如果点不开，先点右上角菜单，选择“在浏览器中打开”。<br><span class="link" id="linkText"></span></div>
     </div>
   </div>
   <script>
-    const PREVIEW_CHAT_URL = 'https://cs-agent-o0b4rz24s-sunyonglin19930618-6743s-projects.vercel.app/chat.html';
+    const PROD_CHAT_URL = 'https://cs-agent-ashy.vercel.app/chat.html';
     const openChatBtn = document.getElementById('openChatBtn');
-    const openChatNewBtn = document.getElementById('openChatNewBtn');
-    const directLinkText = document.getElementById('directLinkText');
-    if (location.protocol === 'file:') {
-      openChatBtn.href = PREVIEW_CHAT_URL;
-      openChatNewBtn.href = PREVIEW_CHAT_URL;
-      directLinkText.textContent = '直接链接：' + PREVIEW_CHAT_URL;
-    } else {
-      directLinkText.textContent = '直接链接：' + location.origin + '/chat.html';
-    }
+    const copyBtn = document.getElementById('copyBtn');
+    const linkText = document.getElementById('linkText');
+    const targetUrl = location.protocol === 'file:' ? PROD_CHAT_URL : (location.origin + '/chat.html');
+    openChatBtn.href = targetUrl;
+    linkText.textContent = targetUrl;
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(targetUrl);
+        copyBtn.textContent = '已复制';
+        setTimeout(() => (copyBtn.textContent = '复制链接'), 1200);
+      } catch (e) {
+        alert(targetUrl);
+      }
+    });
   </script>
 </body>
 </html>
