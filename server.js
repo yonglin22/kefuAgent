@@ -202,33 +202,37 @@ function queryRefund(orderId) {
 }
 
 function buildFallbackResponse(normalizedMessage) {
-  const q = String(normalizedMessage || '');
+  const q = String(normalizedMessage || '').trim();
+  const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
   const rules = [
-    { test: /已签收|没收到|未收到|签收异常/, type: 'refund', content: '我先帮您看签收异常。请把订单号发我，我继续帮您处理。' },
-    { test: /退款|退货|退款进度|原路退回/, type: 'refund', content: '我先帮您看退款相关问题。请把订单号发我，我继续帮您处理。' },
-    { test: /换货|补发/, type: 'refund', content: '我先帮您看换货或补发问题。请把订单号发我，我继续帮您处理。' },
-    { test: /破损|损坏|开裂|碎了/, type: 'refund', content: '我先帮您看破损售后问题。请把订单号发我，我继续帮您处理。' },
-    { test: /发错|错发|少件|漏发/, type: 'refund', content: '我先帮您看发错或漏发售后。请把订单号发我，我继续帮您处理。' },
-    { test: /质量问题|质量有问题|瑕疵|不好用/, type: 'refund', content: '我先帮您看质量问题售后。请把订单号发我，我继续帮您处理。' },
-    { test: /售后|退货政策|退货规则|七天无理由/, type: 'refund', content: '我先帮您看售后规则。请把订单号发我，我继续帮您处理。' },
-    { test: /物流|快递|轨迹|物流信息|到哪/, type: 'logistics', content: '我先帮您看物流问题。您可以直接发订单号，我来帮您查物流轨迹。' },
-    { test: /订单|下单|发货/, type: 'order', content: '我先帮您看订单问题。您可以直接发订单号，我来帮您查询订单状态。' },
-    { test: /人工|客服|转人工/, type: 'escalate', content: '好的，我马上帮您转人工客服。' }
+    { intent: 'delivery', test: /已签收|没收到|未收到|签收异常/, type: 'refund', content: '请告诉我订单号，我来帮您查签收异常并继续处理。' },
+    { intent: 'refund', test: /退款|退货|退款进度|原路退回/, type: 'refund', content: '请告诉我订单号，我来帮您查退款进度。' },
+    { intent: 'exchange', test: /换货|补发/, type: 'refund', content: '请告诉我订单号，我来帮您查换货或补发进度。' },
+    { intent: 'afterSales', test: /破损|损坏|开裂|碎了|发错|错发|少件|漏发|质量问题|质量有问题|瑕疵|不好用|售后|退货政策|退货规则|七天无理由/, type: 'refund', content: '请告诉我订单号，我来帮您查售后规则。' },
+    { intent: 'logisticsDelay', test: /物流信息不更新|物流不更新|物流延迟|物流信息卡住|物流没更新/, type: 'logistics', content: '物流信息偶尔会有延迟，通常 24 小时内会更新。请把订单号发我，我继续帮您查物流轨迹。' },
+    { intent: 'logistics', test: /物流|快递|轨迹|物流信息|到哪/, type: 'logistics', content: '请直接发订单号，我来帮您查物流轨迹。' },
+    { intent: 'order', test: /订单|下单|发货/, type: 'order', content: '请直接发订单号，我来帮您查订单状态。' },
+    { intent: 'human', test: /人工|客服|转人工/, type: 'escalate', content: '好的，我马上帮您转人工客服。' }
   ];
+
+  if (isOrderLike) {
+    if (pendingIntent === 'delivery') return { type: 'refund', content: '订单号收到，我先帮您查签收异常。', displayContent: '订单号收到，我先帮您查签收异常。' };
+    if (pendingIntent === 'refund') return { type: 'refund', content: '订单号收到，我先帮您查退款进度。', displayContent: '订单号收到，我先帮您查退款进度。' };
+    if (pendingIntent === 'exchange') return { type: 'refund', content: '订单号收到，我先帮您查换货或补发进度。', displayContent: '订单号收到，我先帮您查换货或补发进度。' };
+    if (pendingIntent === 'afterSales') return { type: 'refund', content: '订单号收到，我先帮您查售后规则。', displayContent: '订单号收到，我先帮您查售后规则。' };
+    if (pendingIntent === 'logisticsDelay' || pendingIntent === 'logistics') return { type: 'logistics', content: '订单号收到，我先帮您查物流轨迹。', displayContent: '订单号收到，我先帮您查物流轨迹。' };
+    if (pendingIntent === 'order') return { type: 'order', content: '订单号收到，我先帮您查订单状态。', displayContent: '订单号收到，我先帮您查订单状态。' };
+    return { type: 'text', content: '我收到订单号了，我先帮您继续查询。', displayContent: '我收到订单号了，我先帮您继续查询。' };
+  }
+
   for (const rule of rules) {
     if (rule.test.test(q)) {
-      return {
-        type: rule.type,
-        content: rule.content,
-        displayContent: rule.content
-      };
+      pendingIntent = rule.intent;
+      return { type: rule.type, content: rule.content, displayContent: rule.content };
     }
   }
-  return {
-    type: 'text',
-    content: '我先帮您看下这个问题。您可以补充一下订单号、图片或更多细节，我继续帮您处理。',
-    displayContent: '我先帮您看下这个问题。您可以补充一下订单号、图片或更多细节，我继续帮您处理。'
-  };
+
+  return { type: 'text', content: '请补充订单号、图片或更多细节，我继续帮您处理。', displayContent: '请补充订单号、图片或更多细节，我继续帮您处理。' };
 }
 
 // FAQ 简单检索（生产环境应替换为向量检索）
