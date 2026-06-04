@@ -1107,8 +1107,8 @@
       renderPreview();
       const botNode = addPost({
         role: 'bot',
-        text: '正在查询，请稍候。',
-        meta: { type: 'loading', content: '正在查询，请稍候。' }
+        text: localFallbackReply(text),
+        meta: { type: 'loading', content: '请稍候。' }
       });
       fetch(API, {
         method: 'POST',
