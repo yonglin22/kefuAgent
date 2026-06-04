@@ -393,6 +393,8 @@
       padding: 10px 10px 12px;
       border-top: 1px solid rgba(0,0,0,0.05);
       background: rgba(255,255,255,0.98);
+      position: relative;
+      z-index: 30;
     }
 
     .attachments {
@@ -432,6 +434,8 @@
       display: flex;
       gap: 10px;
       align-items: center;
+      position: relative;
+      z-index: 2;
     }
 
     .composer-left {
@@ -564,6 +568,11 @@
       background: linear-gradient(135deg, var(--primary), var(--primary-2));
       color: white; cursor: pointer; font-size: 18px; font-weight: 800;
       box-shadow: 0 12px 24px rgba(255,93,93,0.22);
+      flex-shrink: 0;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      z-index: 3;
     }
     .send:disabled { opacity: .5; cursor: not-allowed; }
 
@@ -626,7 +635,7 @@
       .toolbar {
         position: sticky;
         bottom: 0;
-        z-index: 12;
+        z-index: 40;
         padding: 10px 10px 12px;
         border-top-left-radius: 0;
         border-top-right-radius: 0;
@@ -714,7 +723,7 @@
             <textarea id="msgInput" placeholder="输入消息..." rows="1"></textarea>
             <button class="voice-trigger" id="voiceTrigger" type="button">按住 说话</button>
           </div>
-          <button class="send" id="sendBtn" onclick="sendMsg()">➤</button>
+          <button class="send" id="sendBtn" type="button">➤</button>
           <div class="composer-tools">
             <button class="more-btn" type="button" onclick="toggleComposerMenu()">＋</button>
             <div class="composer-menu" id="composerMenu">
@@ -1129,8 +1138,18 @@
         .finally(() => {
           sendBtn.disabled = false;
           input.focus();
-        });
+      });
     }
+
+    sendBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      sendMsg();
+    });
+
+    sendBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      sendMsg();
+    }, { passive: false });
 
     function sendQuick(text) {
       input.value = text;
