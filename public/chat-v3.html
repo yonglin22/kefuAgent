@@ -752,6 +752,7 @@
     let recording = false;
     let faqBatchIndex = 0;
     let inputMode = 'text';
+    let pendingIntent = null;
 
     const FAQ_BATCHES = [
       [
@@ -998,20 +999,28 @@
       const q = String(text || '').trim();
       const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
       const rules = [
-        { test: /已签收|没收到|未收到|签收异常/, reply: '请告诉我订单号，我来帮您查签收异常并继续处理。' },
-        { test: /退款|退货|退款进度|原路退回/, reply: '请告诉我订单号，我来帮您查退款进度。' },
-        { test: /换货|补发/, reply: '请告诉我订单号，我来帮您查换货或补发进度。' },
-        { test: /破损|损坏|开裂|碎了/, reply: '请告诉我订单号，我来帮您查破损售后处理。' },
-        { test: /发错|错发|少件|漏发/, reply: '请告诉我订单号，我来帮您查发错或漏发售后。' },
-        { test: /质量问题|质量有问题|瑕疵|不好用/, reply: '请告诉我订单号，我来帮您查质量问题售后。' },
-        { test: /售后|退货政策|退货规则|七天无理由/, reply: '请告诉我订单号，我来帮您查售后规则。' },
-        { test: /物流|快递|轨迹|物流信息|到哪/, reply: '请直接发订单号，我来帮您查物流轨迹。' },
-        { test: /订单|下单|发货/, reply: '请直接发订单号，我来帮您查订单状态。' },
-        { test: /人工|客服|转人工/, reply: '好的，我马上帮您转人工客服。' }
+        { intent: 'delivery', test: /已签收|没收到|未收到|签收异常/, reply: '请告诉我订单号，我来帮您查签收异常并继续处理。' },
+        { intent: 'refund', test: /退款|退货|退款进度|原路退回/, reply: '请告诉我订单号，我来帮您查退款进度。' },
+        { intent: 'exchange', test: /换货|补发/, reply: '请告诉我订单号，我来帮您查换货或补发进度。' },
+        { intent: 'afterSales', test: /破损|损坏|开裂|碎了|发错|错发|少件|漏发|质量问题|质量有问题|瑕疵|不好用|售后|退货政策|退货规则|七天无理由/, reply: '请告诉我订单号，我来帮您查售后规则。' },
+        { intent: 'logistics', test: /物流|快递|轨迹|物流信息|到哪/, reply: '请直接发订单号，我来帮您查物流轨迹。' },
+        { intent: 'order', test: /订单|下单|发货/, reply: '请直接发订单号，我来帮您查订单状态。' },
+        { intent: 'human', test: /人工|客服|转人工/, reply: '好的，我马上帮您转人工客服。' }
       ];
-      if (isOrderLike) return '我收到订单号了，我先帮您继续查询。';
+      if (isOrderLike) {
+        if (pendingIntent === 'delivery') return '订单号收到，我先帮您查签收异常。';
+        if (pendingIntent === 'refund') return '订单号收到，我先帮您查退款进度。';
+        if (pendingIntent === 'exchange') return '订单号收到，我先帮您查换货或补发进度。';
+        if (pendingIntent === 'afterSales') return '订单号收到，我先帮您查售后规则。';
+        if (pendingIntent === 'logistics') return '订单号收到，我先帮您查物流轨迹。';
+        if (pendingIntent === 'order') return '订单号收到，我先帮您查订单状态。';
+        return '我收到订单号了，我先帮您继续查询。';
+      }
       for (const rule of rules) {
-        if (rule.test.test(q)) return rule.reply;
+        if (rule.test.test(q)) {
+          pendingIntent = rule.intent;
+          return rule.reply;
+        }
       }
       return '请补充订单号、图片或更多细节，我继续帮您处理。';
     }
