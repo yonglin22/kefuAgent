@@ -999,16 +999,6 @@
       if (wrap) wrap.innerHTML = escapeHtml(text);
     }
 
-    async function fetchWithTimeout(url, options = {}, timeoutMs = 10000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        return await fetch(url, { ...options, signal: controller.signal });
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
     function localFallbackReply(text) {
       const q = String(text || '').trim();
       const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
@@ -1119,14 +1109,14 @@
 
       const botNode = addPost({
         role: 'bot',
-        text: '正在查询，请稍候。',
-        meta: { type: 'loading', content: '正在查询，请稍候。' }
+        text: localFallbackReply(text),
+        meta: { type: 'local', content: '统一使用后端最终回复。' }
       });
-      fetchWithTimeout(API, {
+      fetch(API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: text, sessionId, attachments: payloadAttachments })
-      }, 10000)
+      })
         .then(async res => {
           const data = await res.json();
           const replyText = data.response?.displayContent || data.response?.content || data.response?.message || localFallbackReply(text);
