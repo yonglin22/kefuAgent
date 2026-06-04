@@ -996,10 +996,15 @@
 
     function localFallbackReply(text) {
       const q = String(text || '');
-      if (/退款|退货|到账/.test(q)) return '请直接发订单号，我来帮您查退款进度。';
-      if (/订单|下单|发货/.test(q)) return '请直接发订单号，我来帮您查订单状态。';
-      if (/物流|快递|签收|到哪/.test(q)) return '请直接发订单号，我来帮您查物流轨迹。';
-      if (/人工|客服|转人工/.test(q)) return '好的，我马上帮您转人工客服。';
+      const rules = [
+        { test: /订单|下单|发货|到哪|签收/, reply: '请直接发订单号，我来帮您查订单状态。' },
+        { test: /物流|快递|轨迹|物流信息/, reply: '请直接发订单号，我来帮您查物流轨迹。' },
+        { test: /退款|退货|到账|退款进度/, reply: '请直接发订单号，我来帮您查退款进度。' },
+        { test: /人工|客服|转人工/, reply: '好的，我马上帮您转人工客服。' }
+      ];
+      for (const rule of rules) {
+        if (rule.test.test(q)) return rule.reply;
+      }
       return '请补充订单号、图片或更多细节，我继续帮您处理。';
     }
 
