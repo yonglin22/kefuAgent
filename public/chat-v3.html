@@ -995,7 +995,8 @@
     }
 
     function localFallbackReply(text) {
-      const q = String(text || '');
+      const q = String(text || '').trim();
+      const isOrderLike = /^\d{6,20}$/.test(q) || /订单号|单号/.test(q);
       const rules = [
         { test: /已签收|没收到|未收到|签收异常/, reply: '请告诉我订单号，我来帮您查签收异常并继续处理。' },
         { test: /退款|退货|退款进度|原路退回/, reply: '请告诉我订单号，我来帮您查退款进度。' },
@@ -1008,6 +1009,7 @@
         { test: /订单|下单|发货/, reply: '请直接发订单号，我来帮您查订单状态。' },
         { test: /人工|客服|转人工/, reply: '好的，我马上帮您转人工客服。' }
       ];
+      if (isOrderLike) return '我收到订单号了，我先帮您继续查询。';
       for (const rule of rules) {
         if (rule.test.test(q)) return rule.reply;
       }
