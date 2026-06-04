@@ -1103,6 +1103,8 @@
 
     setInputMode('text');
 
+    const isWeChat = /MicroMessenger/i.test(navigator.userAgent || '');
+
     async function sendMsg() {
       const text = input.value.trim();
       if (!text && attachments.length === 0) return;
@@ -1118,8 +1120,13 @@
       const botNode = addPost({
         role: 'bot',
         text: localFallbackReply(text),
-        meta: { type: 'fallback', content: '先返回本地结果，联网结果稍后补充。' }
+        meta: { type: 'fallback', content: '先返回本地结果。' }
       });
+      if (isWeChat) {
+        sendBtn.disabled = false;
+        input.focus();
+        return;
+      }
       try {
         const res = await Promise.race([
           fetchWithTimeout(API, {
