@@ -56,11 +56,11 @@
     </div>
   </div>
   <script>
-    const PROD_CHAT_URL = 'https://cs-agent-ashy.vercel.app/chat.html';
+    const PROD_CHAT_URL = 'https://cs-agent-ashy.vercel.app/chat.html?v=20260604';
     const openChatBtn = document.getElementById('openChatBtn');
     const copyBtn = document.getElementById('copyBtn');
     const linkText = document.getElementById('linkText');
-    const targetUrl = location.protocol === 'file:' ? PROD_CHAT_URL : (location.origin + '/chat.html');
+    const targetUrl = location.protocol === 'file:' ? PROD_CHAT_URL : (location.origin + '/chat.html?v=20260604');
     openChatBtn.href = targetUrl;
     linkText.textContent = targetUrl;
     copyBtn.addEventListener('click', async () => {
